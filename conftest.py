@@ -2,48 +2,69 @@ import os
 from datetime import datetime
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
 import pytest_html
 import requests
 
+import pytest
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
+
+
+# Pasul 1: Îi spunem lui PyTest să accepte parametrul --browser în linia de comandă
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="store",
+        default="chrome",
+        help="Alege browserul pentru rulare: chrome, firefox sau edge"
+    )
+
+
 @pytest.fixture(scope="function")
 def driver(request):
-    options = webdriver.ChromeOptions()
+    # Citim browserul ales din linia de comandă
+    browser_name = request.config.getoption("browser").lower()
 
-    # 1. FORȚARE MOD INCOGNITO (Izolează complet sesiunile de testare)
-    options.add_argument("--incognito")
-    options.add_argument("--headless=new")  # Dezactivează interfața grafică complet
-    options.add_argument("--disable-gpu")  # Optimizează consumul de resurse pe Windows
-    options.add_argument("--window-size=1920,1080")  # Definește o rezoluție fixă în memorie pentru acuratețea elementelor
+    if browser_name == "chrome":
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless=new")  # Modul headless modern
+        options.add_argument("--incognito")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # 2. DEZACTIVARE DETECȚIE SCURGERI DE DATE LA NIVEL DE MOTOR CHROME
-    options.add_argument("--disable-features=PasswordLeakDetection,PasswordManager")
+        driver_instance = webdriver.Chrome(options=options)
 
-    # 3. Dezactivare pop-up salvări parole locale
-    options.add_experimental_option("prefs", {
-        "credentials_enable_service": False,
-        "profile.password_manager_enabled": False,
-        "profile.password_manager_leak_detection": False
-    })
+    elif browser_name == "firefox":
+        options = webdriver.FirefoxOptions()
+        options.add_argument("-headless")
+        options.add_argument("-private")  # Echivalentul Incognito pentru Firefox
+        options.add_argument("--width=1920")
+        options.add_argument("--height=1080")
 
-    # 4. Anti-bot detection switches
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_argument("--start-maximized")
+        driver_instance = webdriver.Firefox(options=options)
 
-    driver = webdriver.Chrome(options=options)
+    elif browser_name == "edge":
+        options = webdriver.EdgeOptions()
+        options.add_argument("--headless")
+        options.add_argument("-inprivate")  # Echivalentul Incognito pentru Edge
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # Mask driver execution flags
-    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-    })
+        driver_instance = webdriver.Edge(options=options)
+    else:
+        raise ValueError(f"Browser-ul '{browser_name}' nu este suportat! Alege dintre: chrome, firefox, edge.")
 
-    if request.node:
-        request.node.funcargs['driver'] = driver
+    driver_instance.maximize_window()
 
-    yield driver
+    yield driver_instance
 
-    driver.quit()
+    driver_instance.quit()
 
 
 # PyTest Hook pentru screenshot-uri la eșec

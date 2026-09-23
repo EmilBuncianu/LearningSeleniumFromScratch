@@ -1,6 +1,6 @@
-name: Selenium Python CI Pipeline
+name: Selenium Multi-Browser Automation Suite
 
-# Specificăm când să ruleze testele: la fiecare Push sau Pull Request pe ramura 'main'
+# Pipeline-ul se va declanșa automat la fiecare push pe branch-ul main
 on:
   push:
     branches: [ "main" ]
@@ -8,44 +8,43 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
-    # Rulăm pe un server curat cu sistem de operare Ubuntu (Linux)
+  test-automation:
     runs-on: ubuntu-latest
 
+    # Matricea lansează 3 containere izolate care rulează în același timp
+    strategy:
+      fail-fast: false  # Dacă un browser eșuează, celelalte continuă rularea
+      matrix:
+        browser: [chrome, firefox, edge]
+
     steps:
-    # Pasul 1: Descarcă codul tău din repository-ul GitHub în mașina virtuală
-    - name: Checkout code
+    # 1. Copiază codul din repository-ul tău în containerul de rulare
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Pasul 2: Instalează Python pe serverul virtual
+    # 2. Configurează Python (mediul curat pentru rulare)
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12' # Versiune stabilă și complet compatibilă pentru mediile Linux CI
+        python-version: '3.12'
 
-    # Pasul 3: Instalează dependențele proiectului (Selenium, PyTest, etc.)
+    # 3. Instalează toate librăriile menționate în ecosistemul tău
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html requests
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html
+        pip install selenium pytest pytest-html pytest-xdist requests
 
-    # Pasul 4: Execută suita de teste automate (se folosește automat modul Headless din conftest.py)
+    # 4. Execută testele în paralel (-n auto) injectând dinamic browserul curent din matrice
+    # comanda preia configurările stabilite în pytest.ini-ul tău
     - name: Run Selenium Tests
       run: |
-        python -m pytest -v -s --html=raport/raport_teste.html
+        python -m pytest --browser ${{ matrix.browser }}
 
-    # Pasul 5: Salvează raportul HTML și eventualele screenshot-uri ca artefacte pe GitHub
-    # Astfel le poți descărca direct de pe GitHub după rulare
-    - name: Upload Test Report & Screenshots
-      if: always() # Acest pas rulează chiar dacă testele trec sau pică
+    # 5. Extrage raportul interactiv din container (chiar dacă testele pică)
+    - name: Upload Test Report
+      if: always() # Obligatoriu, ca să poți descărca raportul chiar și la erori
       uses: actions/upload-artifact@v4
       with:
-        name: pytest-results
-        path: |
-          raport/
-          screenshots/
-        if-no-files-found: ignore
+        name: raport-teste-${{ matrix.browser }}
+        path: raport/raport_teste.html
+        retention-days: 5
