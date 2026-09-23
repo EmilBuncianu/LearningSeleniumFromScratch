@@ -1,0 +1,47 @@
+name: Selenium Python CI Pipeline
+
+# Specificăm când să ruleze testele: la fiecare Push sau Pull Request pe ramura 'main'
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    # Rulăm pe un server curat cu sistem de operare Ubuntu (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+    # Pasul 1: Descarcă codul tău din repository-ul GitHub în mașina virtuală
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Pasul 2: Instalează Python pe serverul virtual
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' # Versiune stabilă și complet compatibilă pentru mediile Linux CI
+
+    # Pasul 3: Instalează dependențele proiectului (Selenium, PyTest, etc.)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium pytest pytest-html
+
+    # Pasul 4: Execută suita de teste automate (se folosește automat modul Headless din conftest.py)
+    - name: Run Selenium Tests
+      run: |
+        python -m pytest -v -s --html=raport/raport_teste.html
+
+    # Pasul 5: Salvează raportul HTML și eventualele screenshot-uri ca artefacte pe GitHub
+    # Astfel le poți descărca direct de pe GitHub după rulare
+    - name: Upload Test Report & Screenshots
+      if: always() # Acest pas rulează chiar dacă testele trec sau pică
+      uses: actions/upload-artifact@v4
+      with:
+        name: pytest-results
+        path: |
+          raport/
+          screenshots/
+        if-no-files-found: ignore
