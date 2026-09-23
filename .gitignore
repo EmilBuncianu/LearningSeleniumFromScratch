@@ -1,0 +1,25 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# PyTest Cache and Reports
+.pytest_cache/
+raport/
+raport_teste.html
+
+# IDE / Editor Files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Local Screenshots
+screenshots/
+
+# Python compiled bytecode
+__pycache__/
+*.pyc
