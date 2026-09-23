@@ -57,6 +57,7 @@ def driver(request):
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--no-sandbox")                # Dezactivează sandbox-ul OS (obligatoriu în CI)
         options.add_argument("--disable-dev-shm-usage")      # Previne crash-urile din lipsă de memorie (/dev/shm)
+        options.add_argument("--inprivate")
 
 
         driver_instance = webdriver.Edge(options=options)
