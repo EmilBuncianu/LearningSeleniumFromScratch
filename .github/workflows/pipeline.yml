@@ -38,11 +38,9 @@ jobs:
       if: matrix.browser == 'edge'
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget curl
-        curl https://microsoft.com | gpg --dearmor > microsoft.gpg
-        sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
-        sudo sh -c 'echo "deb [arch=amd64] https://microsoft.com stable main" > /etc/apt/sources.list.prowork/microsoft-edge-dev.list'
-        sudo rm microsoft.gpg
+        sudo apt-get install -y software-properties-common wget curl
+        curl -fSsL https://microsoft.com | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-edge.gpg > /dev/null
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://microsoft.com stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
         sudo apt-get update
         sudo apt-get install -y microsoft-edge-stable
 
