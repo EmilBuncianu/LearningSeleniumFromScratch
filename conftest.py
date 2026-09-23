@@ -51,14 +51,10 @@ def driver(request):
 
     elif browser_name == "edge":
         options = webdriver.EdgeOptions()
-        options.add_argument("--headless")
-        options.add_argument("-inprivate")  # Echivalentul Incognito pentru Edge
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--no-sandbox")                # Dezactivează sandbox-ul OS (obligatoriu în CI)
-        options.add_argument("--disable-dev-shm-usage")      # Previne crash-urile din lipsă de memorie (/dev/shm)
-        options.add_argument("--inprivate")
-
+        options.add_argument("--headless")  # Modul headless universal standard pentru Edge pe Linux
+        options.add_argument("--no-sandbox")  # Obligatoriu pentru privilegii în GitHub Actions
+        options.add_argument("--disable-dev-shm-usage")  # Previne crash-urile de memorie cache
+        options.add_argument("--disable-gpu")  # Dezactivează accelerarea hardware (important în containere fără placă video)
 
         driver_instance = webdriver.Edge(options=options)
     else:
