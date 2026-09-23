@@ -42,13 +42,12 @@ def driver(request):
 
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
-        options.add_argument("--headless=new")   # Modul headless stabil
+        options.add_argument("--headless")  # Forțează modul headless clasic, ideal pentru containere CI
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-blink-features=AutomationControlled")
-
-        options.add_argument("--no-sandbox")                # Ignoră restricțiile de sandbox din container
-        options.add_argument("--disable-dev-shm-usage")      # Previne prăbușirea din lipsă de memorie cache (/dev/shm)
-        options.add_argument("--disable-gpu")                # Dezactivează randarea grafică (esențial pe Linux Server)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
 
         driver_instance = webdriver.Firefox(options=options)
 
