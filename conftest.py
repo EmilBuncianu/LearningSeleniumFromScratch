@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from selenium import webdriver
 import pytest_html
-
+import requests
 
 @pytest.fixture(scope="function")
 def driver(request):
@@ -85,3 +85,31 @@ def pytest_runtest_makereport(item, call):
                    f'onclick="window.open(this.src)" align="right"/></div>'
             extra.append(pytest_html.extras.html(html))
             report.extra = extra
+
+
+@pytest.fixture(scope="function")
+def auth_headers():
+    """
+    Fixture global care efectuează logarea în backend, extrage Token-ul primit
+    și returnează dicționarul de Headers gata configurat pentru securitate.
+    """
+    # CORECTAT: Adăugat /api la finalul URL-ului
+    base_url = "https://reqres.in/api"
+
+    login_payload = {
+        "email": "eve.holt@reqres.in",
+        "password": "cityslickica"
+    }
+
+    response = requests.post(f"{base_url}/login", json=login_payload)
+    assert response.status_code == 200, "Autentificarea inițială a eșuat!"
+
+    token = response.json().get("token")
+    print(f"\n[API SECURITY] Token extras global din conftest: {token}")
+
+    headers = {
+        # Modificat pentru compatibilitatea cu simulatorul ReqRes
+        "Authorization": token,
+        "Content-Type": "application/json"
+    }
+    return headers

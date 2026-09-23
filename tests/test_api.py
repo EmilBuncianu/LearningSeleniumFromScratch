@@ -52,3 +52,32 @@ def test_user_not_found():
 
     # Serverul trebuie să răspundă cu codul standard 404
     assert response.status_code == 404, f"Așteptat 404, dar s-a primit: {response.status_code}"
+
+
+def test_access_secure_resource(auth_headers):
+    """Test care simulează accesarea unei resurse protejate folosind Token-ul"""
+    # Trimitem Headers-ul primit automat din fixture ca parametru
+    response = requests.get(f"{BASE_URL}/users/4", headers=auth_headers)
+
+    # Validăm succesul
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data["data"]["id"] == 4
+    print(f"\n[API DEBUG] Acces autorizat! Utilizator extras securizat: {response_data['data']['first_name']}")
+
+
+def test_update_user_secure(auth_headers):
+    """Test pentru actualizarea datelor unui utilizator (PUT) într-un mediu securizat"""
+    update_payload = {
+        "name": "Mihai Popescu Modificat",
+        "job": "Lead QA Engineer"
+    }
+
+    # Trimitem request-ul de tip PUT alături de payload și Headers-ul securizat
+    response = requests.put(f"{BASE_URL}/users/4", json=update_payload, headers=auth_headers)
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert response_data["name"] == update_payload["name"]
+    assert response_data["job"] == update_payload["job"]
+    print(f"\n[API DEBUG] Resursă actualizată cu succes folosind autorizarea Bearer!")
