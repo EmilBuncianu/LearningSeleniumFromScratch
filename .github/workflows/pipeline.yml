@@ -34,15 +34,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-xdist requests
 
-    - name: Install Microsoft Edge (pentru job-ul de Edge)
+    - name: Setup Microsoft Edge (pentru job-ul de Edge)
       if: matrix.browser == 'edge'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y software-properties-common wget curl
-        curl -fSsL https://microsoft.com | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-edge.gpg > /dev/null
-        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://microsoft.com stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
-        sudo apt-get update
-        sudo apt-get install -y microsoft-edge-stable
+      uses: browser-actions/setup-edge@v1
+      with:
+        edge-version: stable
 
     # 4. Execută testele în paralel (-n auto) injectând dinamic browserul curent din matrice
     # comanda preia configurările stabilite în pytest.ini-ul tău
