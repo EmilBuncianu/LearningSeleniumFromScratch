@@ -55,6 +55,9 @@ def driver(request):
         options.add_argument("-inprivate")  # Echivalentul Incognito pentru Edge
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--no-sandbox")                # Dezactivează sandbox-ul OS (obligatoriu în CI)
+        options.add_argument("--disable-dev-shm-usage")      # Previne crash-urile din lipsă de memorie (/dev/shm)
+
 
         driver_instance = webdriver.Edge(options=options)
     else:
