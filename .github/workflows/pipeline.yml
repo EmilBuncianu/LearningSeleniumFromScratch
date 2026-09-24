@@ -27,6 +27,8 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
+        # HIGH-SPEED OPTIMIZATION: Enables native caching for pip dependencies
+        cache: 'pip'
 
     # 3. Installs all required dependencies for your ecosystem, including xvfb for headful/headless environments
     - name: Install dependencies
@@ -43,11 +45,12 @@ jobs:
       with:
         edge-version: stable
 
-    # 5. Executes tests in parallel, using xvfb to simulate a virtual display buffer (required for stable execution)
+    # 5. Executes tests in parallel across CPU cores using pytest-xdist (-n 2),
+    # inside the virtual display buffer (required for stable execution)
     # and explicitly sets the unique output path for the report
     - name: Run Selenium Tests
       run: |
-        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html
+        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest -n 2 --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html
 
     # 6. Extracts the interactive report from the container (even if tests fail)
     - name: Upload Test Report
