@@ -2,16 +2,16 @@ from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 
 class LoginPage(BasePage):
-    # Locatori stabili pentru SauceDemo
+    # Stable locators for SauceDemo
     USERNAME_INPUT = (By.ID, "user-name")
     PASSWORD_INPUT = (By.ID, "password")
     LOGIN_BUTTON = (By.ID, "login-button")
-    # Mesajul de eroare apare într-un container h3 pe acest site
+    # The error alert message appears inside an h3 container on this platform
     ALERT_MESSAGE = (By.CSS_SELECTOR, "h3[data-test='error']")
 
     def __init__(self, driver):
         super().__init__(driver)
-        # SauceDemo are formularul direct pe pagina principală, deci calea e goală
+        # SauceDemo renders the authentication form directly on the root URL path
         self.path = "/"
 
     def navigate_to_login(self):

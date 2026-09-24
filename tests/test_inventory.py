@@ -6,47 +6,43 @@ def test_end_to_end_purchase(driver):
     login_page = LoginPage(driver)
     inventory_page = InventoryPage(driver)
 
-    # 1. Logare
+    # 1. Authentication flow
     login_page.navigate_to_login()
     login_page.login("standard_user", "secret_sauce")
 
-    # 2. Adăugare produs în coș și navigare către coș
+    # 2. Add product to cart and navigate to checkout area
     inventory_page.add_backpack_to_cart()
     inventory_page.go_to_cart()
 
-    # 3. Checkout
+    # 3. Checkout information steps
     inventory_page.proceed_to_checkout()
     inventory_page.fill_checkout_information("Alex", "Popescu", "12345")
 
-    # 4. Finalizare comandă
+    # 4. Finalize order process
     inventory_page.finish_order()
 
-    # 5. Verificare succes
+    # 5. Verify successful checkout message
     success_message = inventory_page.get_success_message()
     assert "Thank you for your order!" in success_message
 
-    # Adaugă acest test la finalul fișierului tests/test_login.py
 
 def test_product_sorting_by_price(driver):
-        login_page = LoginPage(driver)
-        inventory_page = InventoryPage(driver)
+    login_page = LoginPage(driver)
+    inventory_page = InventoryPage(driver)
 
-        # 1. Autentificare
-        login_page.navigate_to_login()
-        login_page.login("standard_user", "secret_sauce")
+    # 1. Authentication flow
+    login_page.navigate_to_login()
+    login_page.login("standard_user", "secret_sauce")
 
-        # 2. Sortăm produsele după preț: Low to High ('lohi' este valoarea din HTML)
-        inventory_page.sort_products_by_value("lohi")
+    # 2. Sort products by price: Low to High ('lohi' maps to the HTML value attribute)
+    inventory_page.sort_products_by_value("lohi")
 
-        # 3. Extragem lista de prețuri de pe site
-        actual_prices = inventory_page.get_all_product_prices()
-        print(f"\n[DEBUG] Prețurile de pe site după sortare: {actual_prices}")
+    # 3. Extract the list of product prices from the DOM
+    actual_prices = inventory_page.get_all_product_prices()
+    print(f"\n[DEBUG] App prices extracted after sorting sequence: {actual_prices}")
 
-        # 4. Creăm o listă sortată matematic în Python pentru comparație
-        expected_prices = sorted(actual_prices)
+    # 4. Generate a mathematically sorted array in Python for absolute baseline comparison
+    expected_prices = sorted(actual_prices)
 
-        # 5. Verificăm dacă ordinea de pe site coincide cu cea sortată corect
-        assert actual_prices == expected_prices, f"Sortarea a eșuat! Așteptat: {expected_prices}, Dar a rezultat: {actual_prices}"
-
-
-# Adaugă acest test la finalul fișierului tests/test_login.py
+    # 5. Assert whether the UI rendering matches the expected numerical sort order
+    assert actual_prices == expected_prices, f"Product sorting failed! Expected order: {expected_prices}, but received: {actual_prices}"

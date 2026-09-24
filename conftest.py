@@ -2,37 +2,27 @@ import os
 from datetime import datetime
 import pytest
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.edge.service import Service as EdgeService
 import pytest_html
 import requests
 
-import pytest
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.edge.service import Service as EdgeService
-
-
-# Pasul 1: Îi spunem lui PyTest să accepte parametrul --browser în linia de comandă
+# Step 1: Register the custom --browser command-line option for PyTest execution
 def pytest_addoption(parser):
     parser.addoption(
         "--browser",
         action="store",
         default="chrome",
-        help="Alege browserul pentru rulare: chrome, firefox sau edge"
+        help="Choose target browser for execution: chrome, firefox or edge"
     )
 
 
 @pytest.fixture(scope="function")
 def driver(request):
-    # Citim browserul ales din linia de comandă
+    # Retrieve the specified browser name parameter from the execution command line
     browser_name = request.config.getoption("browser").lower()
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless=new")  # Modul headless modern
+        options.add_argument("--headless=new")  # Modern Chromium headless execution switch
         options.add_argument("--incognito")
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920,1080")
@@ -42,7 +32,7 @@ def driver(request):
 
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
-        options.add_argument("--headless")  # Forțează modul headless clasic, ideal pentru containere CI
+        options.add_argument("--headless")  # Forces standard headless mode, ideal for CI environments
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--no-sandbox")
@@ -53,14 +43,14 @@ def driver(request):
 
     elif browser_name == "edge":
         options = webdriver.EdgeOptions()
-        options.add_argument("--headless")  # Modul headless universal standard pentru Edge pe Linux
-        options.add_argument("--no-sandbox")  # Obligatoriu pentru privilegii în GitHub Actions
-        options.add_argument("--disable-dev-shm-usage")  # Previne crash-urile de memorie cache
-        options.add_argument("--disable-gpu")  # Dezactivează accelerarea hardware (important în containere fără placă video)
+        options.add_argument("--headless")  # Standard universal headless switch for Edge on Linux architectures
+        options.add_argument("--no-sandbox")  # Mandatory flag for container execution permissions in GitHub Actions
+        options.add_argument("--disable-dev-shm-usage")  # Prevents browser crashes resulting from shared cache memory exhaustion
+        options.add_argument("--disable-gpu")  # Disables hardware rendering (essential on headless Linux servers)
 
         driver_instance = webdriver.Edge(options=options)
     else:
-        raise ValueError(f"Browser-ul '{browser_name}' nu este suportat! Alege dintre: chrome, firefox, edge.")
+        raise ValueError(f"The browser choice '{browser_name}' is not supported! Please choose between: chrome, firefox, edge.")
 
     driver_instance.maximize_window()
 
@@ -69,7 +59,7 @@ def driver(request):
     driver_instance.quit()
 
 
-# PyTest Hook pentru screenshot-uri la eșec
+# PyTest Hook for capturing failure screenshots locally
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
@@ -86,8 +76,7 @@ def pytest_runtest_makereport(item, call):
             print(f"\n[FAILURE ALERT] Captured system screen saved to: {screenshot_path}")
 
 
-# Adaugă acest cod la finalul fișierului conftest.py, sub celălalt hook existent
-
+# PyTest Hook variant for injecting the failure screenshots inside the interactive HTML report dashboards
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
@@ -103,9 +92,9 @@ def pytest_runtest_makereport(item, call):
             screenshot_path = f"screenshots/{test_name}_{timestamp}.png"
             driver.save_screenshot(screenshot_path)
 
-            # Codul nou care inserează imaginea în raportul HTML:
+            # FIXED: Double curly braces {{this.src}} to protect the JavaScript code block from Python interpreter errors
             html = f'<div><img src="{screenshot_path}" alt="screenshot" style="width:304px;height:228px;" ' \
-                   f'onclick="window.open(this.src)" align="right"/></div>'
+                   f'onclick="window.open({{this.src}})" align="right"/></div>'
             extra.append(pytest_html.extras.html(html))
             report.extra = extra
 
@@ -113,10 +102,10 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(scope="function")
 def auth_headers():
     """
-    Fixture global care efectuează logarea în backend, extrage Token-ul primit
-    și returnează dicționarul de Headers gata configurat pentru securitate.
+    Global lifecycle fixture executing a backend authentication request, extracting
+    the returned dynamic security Token, and yielding a pre-configured Authorization header.
     """
-    # CORECTAT: Adăugat /api la finalul URL-ului
+    # FIXED: Added the required /api routing suffix to the endpoint context path
     base_url = "https://reqres.in/api"
 
     login_payload = {
@@ -125,13 +114,13 @@ def auth_headers():
     }
 
     response = requests.post(f"{base_url}/login", json=login_payload)
-    assert response.status_code == 200, "Autentificarea inițială a eșuat!"
+    assert response.status_code == 200, "Initial backend API authentication routine failed!"
 
     token = response.json().get("token")
-    print(f"\n[API SECURITY] Token extras global din conftest: {token}")
+    print(f"\n[API SECURITY] Successfully extracted Authorization token globally from conftest: {token}")
 
     headers = {
-        # Modificat pentru compatibilitatea cu simulatorul ReqRes
+        # Configured for strict compliance with the mock ReqRes authentication gateway
         "Authorization": token,
         "Content-Type": "application/json"
     }

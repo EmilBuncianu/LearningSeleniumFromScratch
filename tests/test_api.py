@@ -1,83 +1,83 @@
 import pytest
 import requests
 
-# URL-ul de bază al API-ului de test
+# Base URL for the target test API
 BASE_URL = "https://reqres.in/api"
 
 
 def test_get_users_list():
-    """Test pentru a verifica extragerea unei liste de utilizatori (Metoda GET)"""
-    # 1. Trimitem cererea HTTP GET
+    """Test case to verify extracting a list of users (GET Method)."""
+    # 1. Send the HTTP GET request
     response = requests.get(f"{BASE_URL}/users?page=2")
 
-    # 2. Validăm Codul de Status HTTP (200 OK înseamnă succes)
-    assert response.status_code == 200, f"Status cod greșit: {response.status_code}"
+    # 2. Validate the HTTP Status Code (200 OK indicates success)
+    assert response.status_code == 200, f"Incorrect status code: {response.status_code}"
 
-    # 3. Parsăm răspunsul JSON primit de la backend
+    # 3. Parse the received JSON response from the backend
     response_data = response.json()
 
-    # 4. Aserțiuni pe structura de date primită
+    # 4. Assertions on the returned data structure
     assert "page" in response_data
     assert response_data["page"] == 2
-    assert len(response_data["data"]) > 0, "Lista de utilizatori este goală!"
-    print(f"\n[API DEBUG] Primul utilizator găsit: {response_data['data'][0]['email']}")
+    assert len(response_data["data"]) > 0, "The users list is empty!"
+    print(f"\n[API DEBUG] First user found: {response_data['data'][0]['email']}")
 
 
 def test_create_user():
-    """Test pentru a verifica crearea unui utilizator nou (Metoda POST)"""
-    # 1. Definim corpul JSON (payload-ul) pe care îl trimitem la server
+    """Test case to verify creating a new user (POST Method)."""
+    # 1. Define the JSON body (payload) to send to the server
     payload = {
         "name": "Mihai Popescu",
         "job": "QA Automation Engineer"
     }
 
-    # 2. Trimitem cererea HTTP POST cu datele noastre
+    # 2. Send the HTTP POST request with our data
     response = requests.post(f"{BASE_URL}/users", json=payload)
 
-    # 3. Validăm codul de status (201 Created se întoarce la salvare cu succes)
-    assert response.status_code == 201, f"Utilizatorul nu a fost creat! Status: {response.status_code}"
+    # 3. Validate the status code (201 Created is returned upon successful save)
+    assert response.status_code == 201, f"User was not created! Status: {response.status_code}"
 
-    # 4. Verificăm că serverul ne întoarce datele corecte înapoi, plus un ID generat
+    # 4. Verify that the server returns the correct data along with a generated ID
     response_data = response.json()
     assert response_data["name"] == payload["name"]
     assert response_data["job"] == payload["job"]
-    assert "id" in response_data, "Serverul nu a generat un ID pentru utilizator!"
-    print(f"\n[API DEBUG] Utilizator creat cu succes! ID Generat: {response_data['id']}")
+    assert "id" in response_data, "The server did not generate an ID for the user!"
+    print(f"\n[API DEBUG] User created successfully! Generated ID: {response_data['id']}")
 
 
 def test_user_not_found():
-    """Test pentru a verifica gestionarea erorilor când resursa nu există (404 Not Found)"""
-    # Trimitem un ID de utilizator inexistent (ex: 23)
+    """Test case to verify error handling when a resource does not exist (404 Not Found)."""
+    # Send a non-existent user ID (e.g., 23)
     response = requests.get(f"{BASE_URL}/users/23")
 
-    # Serverul trebuie să răspundă cu codul standard 404
-    assert response.status_code == 404, f"Așteptat 404, dar s-a primit: {response.status_code}"
+    # The server must respond with the standard 404 code
+    assert response.status_code == 404, f"Expected 404, but received: {response.status_code}"
 
 
 def test_access_secure_resource(auth_headers):
-    """Test care simulează accesarea unei resurse protejate folosind Token-ul"""
-    # Trimitem Headers-ul primit automat din fixture ca parametru
+    """Test case simulating access to a protected resource using the authentication Token."""
+    # Send the Headers automatically received from the fixture as a parameter
     response = requests.get(f"{BASE_URL}/users/4", headers=auth_headers)
 
-    # Validăm succesul
+    # Validate success
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["data"]["id"] == 4
-    print(f"\n[API DEBUG] Acces autorizat! Utilizator extras securizat: {response_data['data']['first_name']}")
+    print(f"\n[API DEBUG] Authorized access! Safely extracted user: {response_data['data']['first_name']}")
 
 
 def test_update_user_secure(auth_headers):
-    """Test pentru actualizarea datelor unui utilizator (PUT) într-un mediu securizat"""
+    """Test case for updating a user's data (PUT) within a secured environment."""
     update_payload = {
         "name": "Mihai Popescu Modificat",
         "job": "Lead QA Engineer"
     }
 
-    # Trimitem request-ul de tip PUT alături de payload și Headers-ul securizat
+    # Send the PUT request along with the payload and the secured Headers
     response = requests.put(f"{BASE_URL}/users/4", json=update_payload, headers=auth_headers)
 
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["name"] == update_payload["name"]
     assert response_data["job"] == update_payload["job"]
-    print(f"\n[API DEBUG] Resursă actualizată cu succes folosind autorizarea Bearer!")
+    print(f"\n[API DEBUG] Resource successfully updated using Bearer authorization!")

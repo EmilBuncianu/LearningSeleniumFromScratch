@@ -1,6 +1,6 @@
 name: Selenium Multi-Browser Automation Suite
 
-# Pipeline-ul se va declanșa automat la fiecare push pe branch-ul main
+# The pipeline triggers automatically on every push or pull request to the main branch
 on:
   push:
     branches: [ "main" ]
@@ -11,24 +11,24 @@ jobs:
   test-automation:
     runs-on: ubuntu-latest
 
-    # Matricea lansează 3 containere izolate care rulează în același timp
+    # The matrix launches 3 isolated containers running simultaneously
     strategy:
-      fail-fast: false  # Dacă un browser eșuează, celelalte continuă rularea
+      fail-fast: false  # If one browser fails, the others continue running
       matrix:
         browser: [chrome, firefox, edge]
 
     steps:
-    # 1. Copiază codul din repository-ul tău în containerul de rulare
+    # 1. Clones the code from your repository into the runner container
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2. Configurează Python (mediul curat pentru rulare)
+    # 2. Configures Python (sets up a clean environment for execution)
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 
-    # 3. Instalează toate librăriile menționate în ecosistemul tău
+    # 3. Installs all required dependencies for your ecosystem
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -40,15 +40,15 @@ jobs:
       with:
         edge-version: stable
 
-    # 4. Execută testele în paralel (-n auto) injectând dinamic browserul curent din matrice
-    # comanda preia configurările stabilite în pytest.ini-ul tău
+    # 4. Executes tests in parallel (-n auto), dynamically injecting the current matrix browser.
+    # This command automatically inherits the configurations defined in your pytest.ini
     - name: Run Selenium Tests
       run: |
         python -m pytest --browser ${{ matrix.browser }}
 
-    # 5. Extrage raportul interactiv din container (chiar dacă testele pică)
+    # 5. Extracts the interactive report from the container (even if tests fail)
     - name: Upload Test Report
-      if: always() # Obligatoriu, ca să poți descărca raportul chiar și la erori
+      if: always() # Required to ensure the report can be downloaded even on failures
       uses: actions/upload-artifact@v4
       with:
         name: raport-teste-${{ matrix.browser }}

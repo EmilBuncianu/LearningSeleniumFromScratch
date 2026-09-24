@@ -1,6 +1,6 @@
-import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as EC
 from pages.base_page import BasePage
 
 
@@ -9,7 +9,7 @@ class InventoryPage(BasePage):
     CART_ICON = (By.CLASS_NAME, "shopping_cart_link")
     CHECKOUT_BUTTON = (By.ID, "checkout")
 
-    # Selectori universali prin ID simplu
+    # Universal selectors using simple IDs
     FIRST_NAME_INPUT = (By.ID, "first-name")
     LAST_NAME_INPUT = (By.ID, "last-name")
     POSTAL_CODE_INPUT = (By.ID, "postal-code")
@@ -31,10 +31,12 @@ class InventoryPage(BasePage):
         self.click_element(self.CART_ICON)
 
     def proceed_to_checkout(self):
-        # Oferim paginii un scurt moment să încarce scripturile din spatele butonului
+        # Give the page a brief moment to load the scripts behind the button
+        # NOTE: Since you implemented safe wrappers, you can safely experiment with removing these hardcoded delays later!
+        import time
         time.sleep(1)
         self.click_element(self.CHECKOUT_BUTTON)
-        # Ne asigurăm că tranziția paginii s-a realizat complet
+        # Ensure the page transition has completed successfully
         time.sleep(1)
 
     def fill_checkout_information(self, first_name, last_name, postal_code):
@@ -44,6 +46,7 @@ class InventoryPage(BasePage):
         self.click_element(self.CONTINUE_BUTTON)
 
     def finish_order(self):
+        import time
         time.sleep(0.5)
         self.click_element(self.FINISH_BUTTON)
 
@@ -56,7 +59,8 @@ class InventoryPage(BasePage):
         select.select_by_value(value_text)
 
     def get_all_product_prices(self):
-        price_elements = self.driver.find_elements(*self.PRODUCT_PRICES)
+        # OPTIMIZATION: Wait dynamically for all price tags to be visible on the DOM before gathering them
+        price_elements = self.wait.until(EC.visibility_of_all_elements_located(self.PRODUCT_PRICES))
         prices = []
         for element in price_elements:
             clean_price = float(element.text.replace("$", ""))
