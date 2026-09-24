@@ -40,11 +40,11 @@ jobs:
       with:
         edge-version: stable
 
-    # 4. Executes tests in parallel (-n auto), dynamically injecting the current matrix browser.
-    # This command automatically inherits the configurations defined in your pytest.ini
+    # 4. Executes tests in parallel, explicitly setting the unique output path for the report
     - name: Run Selenium Tests
       run: |
-        python -m pytest --browser ${{ matrix.browser }}
+        python -m pytest --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html
+
 
     # 5. Extracts the interactive report from the container (even if tests fail)
     - name: Upload Test Report

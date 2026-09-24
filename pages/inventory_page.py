@@ -59,10 +59,13 @@ class InventoryPage(BasePage):
         select.select_by_value(value_text)
 
     def get_all_product_prices(self):
-        # OPTIMIZATION: Wait dynamically for all price tags to be visible on the DOM before gathering them
+        # Wait dynamically for all price tags to be visible on the DOM
         price_elements = self.wait.until(EC.visibility_of_all_elements_located(self.PRODUCT_PRICES))
         prices = []
         for element in price_elements:
-            clean_price = float(element.text.replace("$", ""))
-            prices.append(clean_price)
+            text_price = element.text.strip()
+            if text_price: # Ne asigurăm că elementul are text complet randat
+                clean_price = float(text_price.replace("$", ""))
+                prices.append(clean_price)
         return prices
+
