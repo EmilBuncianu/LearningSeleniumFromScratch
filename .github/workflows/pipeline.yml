@@ -34,25 +34,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd webdriver-manager
 
-    # 4. Sets up Microsoft Edge using official stable PPA
+    # 4. Set up Microsoft Edge using a dedicated Marketplace Action
     - name: Setup Microsoft Edge
+      if: matrix.browser == 'edge'
+      uses: browser-actions/setup-edge@v1
+      with:
+        edge-version: stable
+
+    # 4.5. Install system dependencies for Edge headless execution on Linux
+    - name: Install Edge System Dependencies
       if: matrix.browser == 'edge'
       run: |
         sudo apt-get update
-        sudo apt-get install -y curl gnupg xvfb
-        
-        # Create a secured directory for repository keys
-        sudo mkdir -p /etc/apt/keyrings
-        
-        # Download Microsoft signing key securely
-        curl -fsSL https://microsoft.com | sudo gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg
-        
-        # Inject the repository definition pointing directly to the trusted key
-        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://microsoft.com stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
-        
-        # Update and deploy the stable web browser instance
-        sudo apt-get update
-        sudo apt-get install -y microsoft-edge-stable
+        sudo apt-get install -y xvfb libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0
+
 
     # 5. Executes tests in parallel, using xvfb to simulate a virtual display buffer (required for Edge on Linux)
     # and explicitly sets the unique output path for the report
