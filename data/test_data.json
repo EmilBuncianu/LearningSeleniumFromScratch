@@ -1,0 +1,33 @@
+{
+  "valid_user": {
+    "username": "standard_user",
+    "password": "secret_sauce"
+  },
+  "invalid_login_matrix": [
+    {
+      "username": "invalid_user",
+      "password": "invalid_password",
+      "expected_error": "Epic sadface: Username and password do not match any user in this service"
+    },
+    {
+      "username": "standard_user",
+      "password": "invalid_password",
+      "expected_error": "Epic sadface: Username and password do not match any user in this service"
+    },
+    {
+      "username": "",
+      "password": "",
+      "expected_error": "Epic sadface: Username is required"
+    },
+    {
+      "username": "locked_out_user",
+      "password": "secret_sauce",
+      "expected_error": "Epic sadface: Sorry, this user has been locked out."
+    }
+  ],
+  "checkout_data": {
+    "first_name": "Alex",
+    "last_name": "Popescu",
+    "postal_code": "12345"
+  }
+}

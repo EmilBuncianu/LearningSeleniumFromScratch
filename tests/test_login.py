@@ -1,24 +1,35 @@
 import pytest
 from pages.login_page import LoginPage
+# Importăm direct funcția izolată
+from utils.data_loader import load_test_data
+
+# Încărcăm datele în siguranță înainte de faza de test discovery
+test_data = load_test_data()
+
 
 def test_successful_login(driver):
     """Test case to verify successful authentication with valid credentials."""
     login_page = LoginPage(driver)
+    valid_credentials = test_data["valid_user"]
+
     login_page.navigate_to_login()
-    login_page.login("standard_user", "secret_sauce")
+    login_page.login(valid_credentials["username"], valid_credentials["password"])
     assert "/inventory.html" in driver.current_url
+
+
+def get_invalid_login_scenarios():
+    return [
+        (scenario["username"], scenario["password"], scenario["expected_error"])
+        for scenario in test_data["invalid_login_matrix"]
+    ]
+
 
 @pytest.mark.parametrize(
     "username, password, expected_error",
-    [
-        ("invalid_user", "invalid_password", "Epic sadface: Username and password do not match any user in this service"),
-        ("standard_user", "invalid_password", "Epic sadface: Username and password do not match any user in this service"),
-        ("", "", "Epic sadface: Username is required"),
-        ("locked_out_user", "secret_sauce", "Epic sadface: Sorry, this user has been locked out.")
-    ]
+    get_invalid_login_scenarios()
 )
 def test_invalid_login(driver, username, password, expected_error):
-    """Data-driven test matrix covering various negative authentication scenarios."""
+    """Data-driven test matrix covering negative authentication scenarios."""
     login_page = LoginPage(driver)
     login_page.navigate_to_login()
     login_page.login(username, password)
