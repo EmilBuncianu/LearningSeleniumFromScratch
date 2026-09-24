@@ -59,44 +59,45 @@ def driver(request):
     driver_instance.quit()
 
 
-# PyTest Hook for capturing failure screenshots locally
+# ==========================================
+# SINGLE UNIFIED HOOK FOR SCREENSHOTS & HTML REPORTING
+# ==========================================
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    outcome = yield
-    report = outcome.get_result()
-
-    if report.when == "call" and report.failed:
-        driver = item.funcargs.get("driver")
-        if driver:
-            os.makedirs("screenshots", exist_ok=True)
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            test_name = item.name
-            screenshot_path = f"screenshots/{test_name}_{timestamp}.png"
-            driver.save_screenshot(screenshot_path)
-            print(f"\n[FAILURE ALERT] Captured system screen saved to: {screenshot_path}")
-
-
-# PyTest Hook variant for injecting the failure screenshots inside the interactive HTML report dashboards
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
+    """Unified hook to capture screenshots on failure and embed them into the HTML report."""
     outcome = yield
     report = outcome.get_result()
     extra = getattr(report, "extra", [])
 
-    if report.when == "call" and report.failed:
-        driver = item.funcargs.get("driver")
-        if driver:
-            os.makedirs("screenshots", exist_ok=True)
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            test_name = item.name
-            screenshot_path = f"screenshots/{test_name}_{timestamp}.png"
-            driver.save_screenshot(screenshot_path)
+    # We only trigger the capture during the setup or execution (call) phases upon failure
+    if report.when in ("setup", "call") and report.failed:
+        # Dynamically fetch the active driver instance from the current test context
+        driver = item.funcargs.get("driver") or item.funcargs.get("logged_in_driver")
 
-            # FIXED: Double curly braces {{this.src}} to protect the JavaScript code block from Python interpreter errors
-            html = f'<div><img src="{screenshot_path}" alt="screenshot" style="width:304px;height:228px;" ' \
-                   f'onclick="window.open({{this.src}})" align="right"/></div>'
-            extra.append(pytest_html.extras.html(html))
-            report.extra = extra
+        if driver:
+            # Step 1: Securely establish the target storage directory
+            os.makedirs("raport", exist_ok=True)
+
+            # Step 2: Generate a strictly unique filename preventing collision during parallel runs
+            clean_test_name = item.nodeid.replace("::", "_").replace("/", "_").replace(".py", "").replace("tests_", "")
+            timestamp = datetime.now().strftime("%H-%M-%S-%f")[:-3]  # Includes milliseconds
+
+            screenshot_filename = f"fail_{clean_test_name}_{timestamp}.png"
+            screenshot_path = os.path.join("raport", screenshot_filename)
+
+            try:
+                # Step 3: Capture and save the screenshot
+                driver.get_screenshot_as_file(screenshot_path)
+                print(f"\n[FAILURE ALERT] Captured system screen saved securely to: {screenshot_path}")
+
+                # Step 4: Inject the image component cleanly into the pytest-html report DOM
+                # Using a relative path context 'screenshot_filename' ensures image visibility post-upload
+                html = f'<div><img src="{screenshot_filename}" alt="screenshot" style="width:304px;height:228px;" ' \
+                       f'onclick="window.open({{this.src}})" align="right"/></div>'
+                extra.append(pytest_html.extras.html(html))
+                report.extra = extra
+            except Exception as screenshot_error:
+                print(f"\n[ERROR] Failed to save screenshot safely during parallel processing: {str(screenshot_error)}")
 
 
 @pytest.fixture(scope="function")
