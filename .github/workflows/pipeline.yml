@@ -32,7 +32,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html pytest-xdist requests
+        pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd
 
     - name: Setup Microsoft Edge (pentru job-ul de Edge)
       if: matrix.browser == 'edge'
