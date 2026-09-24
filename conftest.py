@@ -100,7 +100,7 @@ def pytest_runtest_makereport(item, call):
                 print(f"\n[ERROR] Failed to save screenshot safely during parallel processing: {str(screenshot_error)}")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def auth_headers():
     """
     Global lifecycle fixture executing a backend authentication request, extracting
