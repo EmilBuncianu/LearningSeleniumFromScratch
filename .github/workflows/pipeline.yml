@@ -28,28 +28,22 @@ jobs:
       with:
         python-version: '3.12'
 
-    # 3. Installs all required dependencies for your ecosystem
+    # 3. Installs all required dependencies for your ecosystem, including xvfb for headful/headless environments
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd webdriver-manager
+        sudo apt-get update
+        sudo apt-get install -y xvfb
 
-    # 4. Set up Microsoft Edge using a dedicated Marketplace Action
+    # 4. Set up Microsoft Edge natively using a dedicated Marketplace Action
     - name: Setup Microsoft Edge
       if: matrix.browser == 'edge'
       uses: browser-actions/setup-edge@v1
       with:
         edge-version: stable
 
-    # 4.5. Install system dependencies for Edge headless execution on Linux
-    - name: Install Edge System Dependencies
-      if: matrix.browser == 'edge'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb libnss3 libxss1 libasound2 libatk-bridge2.0-0 libgtk-3-0
-
-
-    # 5. Executes tests in parallel, using xvfb to simulate a virtual display buffer (required for Edge on Linux)
+    # 5. Executes tests in parallel, using xvfb to simulate a virtual display buffer (required for stable execution)
     # and explicitly sets the unique output path for the report
     - name: Run Selenium Tests
       run: |
