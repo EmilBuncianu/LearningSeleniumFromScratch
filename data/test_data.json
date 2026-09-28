@@ -29,5 +29,6 @@
     "first_name": "Alex",
     "last_name": "Popescu",
     "postal_code": "12345"
-  }
+  },
+  "base_url": "https://www.saucedemo.com"
 }

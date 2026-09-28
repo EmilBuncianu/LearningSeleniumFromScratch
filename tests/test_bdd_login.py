@@ -28,7 +28,6 @@ def verify_redirection(driver):
 
 
 
-from pytest_bdd import when, then, parsers
 
 # We reuse the existing @given('I navigate to the login page') defined at the top of your file
 

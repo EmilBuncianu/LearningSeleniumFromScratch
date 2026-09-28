@@ -1,9 +1,9 @@
 import pytest
 from pages.login_page import LoginPage
-# Importăm direct funcția izolată
+
 from utils.data_loader import load_test_data
 
-# Încărcăm datele în siguranță înainte de faza de test discovery
+
 test_data = load_test_data()
 
 

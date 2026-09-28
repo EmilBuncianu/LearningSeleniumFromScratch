@@ -4,6 +4,7 @@ import pytest
 from selenium import webdriver
 import pytest_html
 import requests
+import json
 
 # Step 1: Register the custom --browser command-line option for PyTest execution
 def pytest_addoption(parser):
@@ -14,6 +15,24 @@ def pytest_addoption(parser):
         help="Choose target browser for execution: chrome, firefox or edge"
     )
 
+
+@pytest.fixture(scope="session")
+def test_config():
+    """Citește fișierul de configurare JSON și returnează datele."""
+    # Determinăm calea absolută către fișier pentru a evita erori de rulare
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(base_dir, "test_data.json")
+
+    with open(json_path, "r") as file:
+        config_data = json.load(file)
+
+    return config_data
+
+
+@pytest.fixture(scope="session")
+def base_url(test_config):
+    """Returnează URL-ul de bază extras din fișierul JSON."""
+    return test_config.get("base_url")
 
 @pytest.fixture(scope="function")
 def driver(request):

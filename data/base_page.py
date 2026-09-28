@@ -12,9 +12,6 @@ class BasePage:
         self.base_url = "https://saucedemo.com"
         self.wait = WebDriverWait(self.driver, 10)
 
-    # ... (restul metodelor tale: open_url, find_element, click_element, type_text) ...
-
-    # 🚀 ASIGURĂ-TE CĂ ACEST BLOC ESTE INDENTAT CORECT ÎN INTERIORUL CLASEI:
     @staticmethod
     def load_test_data():
         """Resolves the absolute path to the data directory and loads the JSON test data file."""
