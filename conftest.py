@@ -17,22 +17,16 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session")
-def test_config():
-    """Citește fișierul de configurare JSON și returnează datele."""
-    # Determinăm calea absolută către fișier pentru a evita erori de rulare
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    json_path = os.path.join(base_dir, "test_data.json")
-
-    with open(json_path, "r") as file:
-        config_data = json.load(file)
-
-    return config_data
-
+def base_url(test_config):
+    """Returnează URL-ul pentru Selenium UI (saucedemo.com)."""
+    return test_config.get("base_url")
 
 @pytest.fixture(scope="session")
-def base_url(test_config):
-    """Returnează URL-ul de bază extras din fișierul JSON."""
-    return test_config.get("base_url")
+def base_url_api(test_config):
+    """Returnează URL-ul pentru API Tests (reqres.in/api)."""
+    return test_config.get("base_url_api")
+
+
 
 @pytest.fixture(scope="function")
 def driver(request):
@@ -120,6 +114,17 @@ def pytest_runtest_makereport(item, call):
 
 
 @pytest.fixture(scope="session")
+def test_config():
+    """Încarcă datele din fișierul test_env.json aflat în folderul tests."""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Modifică aici calea adăugând folderul în care l-ai salvat (ex: "tests")
+    json_path = os.path.join(base_dir, "data", "test_env.json")
+
+    with open(json_path, "r") as file:
+        return json.load(file)
+
+@pytest.fixture(scope="session")
 def auth_headers():
     """
     Global lifecycle fixture executing a backend authentication request, extracting
@@ -145,3 +150,10 @@ def auth_headers():
         "Content-Type": "application/json"
     }
     return headers
+
+from api.api_client import APIClient
+
+@pytest.fixture(scope="session")
+def api_client(base_url_api):  # <--- Eroarea este aici, cere ceva ce nu există
+    return APIClient(base_url=base_url_api)
+
