@@ -82,28 +82,26 @@ jobs:
         path: downloaded-results
 
     - name: Set up Java Environment for Allure CLI
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Install Allure Commandline Tool Natively
+    - name: Install Allure Commandline Tool via NPM
       run: |
-        wget https://github.com
-        tar -zxvf allure-2.30.0.tgz
-        sudo mv allure-2.30.0 /opt/allure
-        sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+        # Instalăm Allure global și curat folosind npm, eliminând erorile de wget/tar
+        sudo npm install -g allure-commandline --unsafe-perm=true
 
     - name: Build Structure and Inject History
       run: |
         mkdir -p public-site/chrome public-site/firefox public-site/edge
         
-        # Copiem istoricul anterior dacă există în gh-pages pentru a păstra graficele de trend
+        # Copiem istoricul anterior doar dacă folderul există fizic (previne crash-ul la prima rulare)
         if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/ || true; fi
         if [ -d "gh-pages-root/firefox/history" ]; then cp -r gh-pages-root/firefox/history downloaded-results/allure-results-firefox/ || true; fi
         if [ -d "gh-pages-root/edge/history" ]; then cp -r gh-pages-root/edge/history downloaded-results/allure-results-edge/ || true; fi
         
-        # Compilăm JSON-urile native în rapoarte HTML statice, fără Docker
+        # Generăm rapoartele HTML statice prin binarul instalat global
         allure generate downloaded-results/allure-results-chrome -o public-site/chrome --clean
         allure generate downloaded-results/allure-results-firefox -o public-site/firefox --clean
         allure generate downloaded-results/allure-results-edge -o public-site/edge --clean
