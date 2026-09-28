@@ -11,6 +11,12 @@ jobs:
   test-automation:
     runs-on: ubuntu-22.04
 
+    # Required permissions for GitHub Actions to write and deploy to the gh-pages branch
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
     # The matrix launches 3 isolated containers running simultaneously
     strategy:
       fail-fast: false  # If one browser fails, the others continue running
@@ -27,13 +33,12 @@ jobs:
       uses: actions/setup-python@v5.4.0
       with:
         python-version: '3.12'
-        # We removed the generic cache string to prevent structural search errors
 
-    # 3. Installs all required dependencies for your ecosystem, including xvfb for headful/headless environments
+    # 3. Installs all required dependencies for your ecosystem, including allure-pytest and xvfb
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd webdriver-manager
+        pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd webdriver-manager allure-pytest
         sudo apt-get update
         sudo apt-get install -y xvfb
 
@@ -45,17 +50,43 @@ jobs:
         edge-version: stable
 
     # 5. Executes tests in parallel across CPU cores using pytest-xdist (-n 2),
-    # inside the virtual display buffer (required for stable execution)
-    # and explicitly sets the unique output path for the report
+    # inside the virtual display buffer and explicitly populates the allure-results folder
     - name: Run Selenium Tests
       run: |
-        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest -n 2 --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html
+        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest -n 2 --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html --alluredir=allure-results
 
-    # 6. Extracts the interactive report from the container (even if tests fail)
-    - name: Upload Test Report
-      if: always() # Required to ensure the report can be downloaded even on failures
+    # 6. Extracts the interactive standard report from the container (even if tests fail)
+    - name: Upload Standard Test Report
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: raport-teste-${{ matrix.browser }}
         path: raport/raport_teste.html
         retention-days: 5
+
+    # 7. Pulls the existing execution history from gh-pages branch to persist trend charts
+    - name: Load Allure History
+      uses: actions/checkout@v4.2.2
+      if: always()
+      with:
+        ref: gh-pages
+        path: gh-pages-dir
+
+    # 8. Compiles raw JSON files into a structured Allure dashboard report inside an isolated browser folder
+    - name: Build Allure Report
+      uses: simple-elf/allure-report-action@v1.11
+      if: always()
+      with:
+        allure_results: allure-results
+        allure_history: allure-history
+        subfolder: ${{ matrix.browser }}
+        keep_reports: 20
+
+    # 9. Publishes the newly built Allure Report matrix architecture directly to GitHub Pages hosting
+    - name: Deploy Allure Report to GitHub Pages
+      if: always()
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: allure-history
+        keep_files: true

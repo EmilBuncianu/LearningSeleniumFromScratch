@@ -1,0 +1,1 @@
+{"uuid": "68a58fa2-82bf-46a0-860b-5771c0e30492", "befores": [{"name": "pytestbdd_stepdef_given_I navigate to the login page", "status": "passed", "start": 1790600414998, "stop": 1790600414998}], "afters": [{"name": "pytestbdd_stepdef_given_I navigate to the login page::<lambda>", "start": 1790600419063}], "start": 1790600414998, "stop": 1790600419063}
