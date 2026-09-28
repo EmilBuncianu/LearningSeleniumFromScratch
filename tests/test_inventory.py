@@ -5,6 +5,7 @@ from utils.data_loader import load_test_data
 # Load the externalized JSON test data dynamically
 test_data = load_test_data()
 
+
 def test_end_to_end_purchase(driver):
     """Test case to verify a complete user purchase flow using external test data."""
     login_page = LoginPage(driver)
@@ -27,7 +28,7 @@ def test_end_to_end_purchase(driver):
     inventory_page.fill_checkout_information(
         checkout_info["first_name"],
         checkout_info["last_name"],
-        checkout_info["postal_code"]
+        checkout_info["postal_code"],
     )
 
     # 5. Finalize order process

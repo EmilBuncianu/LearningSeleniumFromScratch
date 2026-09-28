@@ -1,8 +1,7 @@
 import pytest
+
 from pages.login_page import LoginPage
-
 from utils.data_loader import load_test_data
-
 
 test_data = load_test_data()
 
@@ -25,8 +24,7 @@ def get_invalid_login_scenarios():
 
 
 @pytest.mark.parametrize(
-    "username, password, expected_error",
-    get_invalid_login_scenarios()
+    "username, password, expected_error", get_invalid_login_scenarios()
 )
 def test_invalid_login(driver, username, password, expected_error):
     """Data-driven test matrix covering negative authentication scenarios."""

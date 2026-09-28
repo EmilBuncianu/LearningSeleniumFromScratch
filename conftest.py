@@ -1,10 +1,12 @@
+import json
 import os
 from datetime import datetime
+
 import pytest
-from selenium import webdriver
 import pytest_html
 import requests
-import json
+from selenium import webdriver
+
 
 # Step 1: Register the custom --browser command-line option for PyTest execution
 def pytest_addoption(parser):
@@ -12,7 +14,7 @@ def pytest_addoption(parser):
         "--browser",
         action="store",
         default="chrome",
-        help="Choose target browser for execution: chrome, firefox or edge"
+        help="Choose target browser for execution: chrome, firefox or edge",
     )
 
 
@@ -21,11 +23,11 @@ def base_url(test_config):
     """Returnează URL-ul pentru Selenium UI (saucedemo.com)."""
     return test_config.get("base_url")
 
+
 @pytest.fixture(scope="session")
 def base_url_api(test_config):
     """Returnează URL-ul pentru API Tests (reqres.in/api)."""
     return test_config.get("base_url_api")
-
 
 
 @pytest.fixture(scope="function")
@@ -35,7 +37,9 @@ def driver(request):
 
     if browser_name == "chrome":
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless=new")  # Modern Chromium headless execution switch
+        options.add_argument(
+            "--headless=new"
+        )  # Modern Chromium headless execution switch
         options.add_argument("--incognito")
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920,1080")
@@ -45,7 +49,9 @@ def driver(request):
 
     elif browser_name == "firefox":
         options = webdriver.FirefoxOptions()
-        options.add_argument("--headless")  # Forces standard headless mode, ideal for CI environments
+        options.add_argument(
+            "--headless"
+        )  # Forces standard headless mode, ideal for CI environments
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--no-sandbox")
@@ -56,14 +62,24 @@ def driver(request):
 
     elif browser_name == "edge":
         options = webdriver.EdgeOptions()
-        options.add_argument("--headless")  # Standard universal headless switch for Edge on Linux architectures
-        options.add_argument("--no-sandbox")  # Mandatory flag for container execution permissions in GitHub Actions
-        options.add_argument("--disable-dev-shm-usage")  # Prevents browser crashes resulting from shared cache memory exhaustion
-        options.add_argument("--disable-gpu")  # Disables hardware rendering (essential on headless Linux servers)
+        options.add_argument(
+            "--headless"
+        )  # Standard universal headless switch for Edge on Linux architectures
+        options.add_argument(
+            "--no-sandbox"
+        )  # Mandatory flag for container execution permissions in GitHub Actions
+        options.add_argument(
+            "--disable-dev-shm-usage"
+        )  # Prevents browser crashes resulting from shared cache memory exhaustion
+        options.add_argument(
+            "--disable-gpu"
+        )  # Disables hardware rendering (essential on headless Linux servers)
 
         driver_instance = webdriver.Edge(options=options)
     else:
-        raise ValueError(f"The browser choice '{browser_name}' is not supported! Please choose between: chrome, firefox, edge.")
+        raise ValueError(
+            f"The browser choice '{browser_name}' is not supported! Please choose between: chrome, firefox, edge."
+        )
 
     driver_instance.maximize_window()
 
@@ -92,8 +108,15 @@ def pytest_runtest_makereport(item, call):
             os.makedirs("raport", exist_ok=True)
 
             # Step 2: Generate a strictly unique filename preventing collision during parallel runs
-            clean_test_name = item.nodeid.replace("::", "_").replace("/", "_").replace(".py", "").replace("tests_", "")
-            timestamp = datetime.now().strftime("%H-%M-%S-%f")[:-3]  # Includes milliseconds
+            clean_test_name = (
+                item.nodeid.replace("::", "_")
+                .replace("/", "_")
+                .replace(".py", "")
+                .replace("tests_", "")
+            )
+            timestamp = datetime.now().strftime("%H-%M-%S-%f")[
+                :-3
+            ]  # Includes milliseconds
 
             screenshot_filename = f"fail_{clean_test_name}_{timestamp}.png"
             screenshot_path = os.path.join("raport", screenshot_filename)
@@ -101,16 +124,22 @@ def pytest_runtest_makereport(item, call):
             try:
                 # Step 3: Capture and save the screenshot
                 driver.get_screenshot_as_file(screenshot_path)
-                print(f"\n[FAILURE ALERT] Captured system screen saved securely to: {screenshot_path}")
+                print(
+                    f"\n[FAILURE ALERT] Captured system screen saved securely to: {screenshot_path}"
+                )
 
                 # Step 4: Inject the image component cleanly into the pytest-html report DOM
                 # Using a relative path context 'screenshot_filename' ensures image visibility post-upload
-                html = f'<div><img src="{screenshot_filename}" alt="screenshot" style="width:304px;height:228px;" ' \
-                       f'onclick="window.open({{this.src}})" align="right"/></div>'
+                html = (
+                    f'<div><img src="{screenshot_filename}" alt="screenshot" style="width:304px;height:228px;" '
+                    f'onclick="window.open({{this.src}})" align="right"/></div>'
+                )
                 extra.append(pytest_html.extras.html(html))
                 report.extra = extra
             except Exception as screenshot_error:
-                print(f"\n[ERROR] Failed to save screenshot safely during parallel processing: {str(screenshot_error)}")
+                print(
+                    f"\n[ERROR] Failed to save screenshot safely during parallel processing: {str(screenshot_error)}"
+                )
 
 
 @pytest.fixture(scope="session")
@@ -124,6 +153,7 @@ def test_config():
     with open(json_path, "r") as file:
         return json.load(file)
 
+
 @pytest.fixture(scope="session")
 def auth_headers():
     """
@@ -133,27 +163,29 @@ def auth_headers():
     # FIXED: Added the required /api routing suffix to the endpoint context path
     base_url = "https://reqres.in/api"
 
-    login_payload = {
-        "email": "eve.holt@reqres.in",
-        "password": "cityslickica"
-    }
+    login_payload = {"email": "eve.holt@reqres.in", "password": "cityslickica"}
 
     response = requests.post(f"{base_url}/login", json=login_payload)
-    assert response.status_code == 200, "Initial backend API authentication routine failed!"
+    assert response.status_code == 200, (
+        "Initial backend API authentication routine failed!"
+    )
 
     token = response.json().get("token")
-    print(f"\n[API SECURITY] Successfully extracted Authorization token globally from conftest: {token}")
+    print(
+        f"\n[API SECURITY] Successfully extracted Authorization token globally from conftest: {token}"
+    )
 
     headers = {
         # Configured for strict compliance with the mock ReqRes authentication gateway
         "Authorization": token,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     return headers
 
+
 from api.api_client import APIClient
+
 
 @pytest.fixture(scope="session")
 def api_client(base_url_api):  # <--- Eroarea este aici, cere ceva ce nu există
     return APIClient(base_url=base_url_api)
-

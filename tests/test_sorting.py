@@ -1,6 +1,7 @@
 from pages.inventory_page import InventoryPage
 from pages.login_page import LoginPage
 
+
 def test_product_sorting_by_price(driver):
     """Test case to verify that products are sorted correctly by price from Low to High."""
     login_page = LoginPage(driver)
@@ -21,4 +22,6 @@ def test_product_sorting_by_price(driver):
     expected_prices = sorted(actual_prices)
 
     # 5. Assert whether the UI rendering matches the expected numerical sort order
-    assert actual_prices == expected_prices, f"Product sorting failed! Expected order: {expected_prices}, but received: {actual_prices}"
+    assert actual_prices == expected_prices, (
+        f"Product sorting failed! Expected order: {expected_prices}, but received: {actual_prices}"
+    )

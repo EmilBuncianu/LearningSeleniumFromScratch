@@ -26,23 +26,24 @@ def test_get_users_list():
 def test_create_user():
     """Test case to verify creating a new user (POST Method)."""
     # 1. Define the JSON body (payload) to send to the server
-    payload = {
-        "name": "Mihai Popescu",
-        "job": "QA Automation Engineer"
-    }
+    payload = {"name": "Mihai Popescu", "job": "QA Automation Engineer"}
 
     # 2. Send the HTTP POST request with our data
     response = requests.post(f"{BASE_URL}/users", json=payload)
 
     # 3. Validate the status code (201 Created is returned upon successful save)
-    assert response.status_code == 201, f"User was not created! Status: {response.status_code}"
+    assert response.status_code == 201, (
+        f"User was not created! Status: {response.status_code}"
+    )
 
     # 4. Verify that the server returns the correct data along with a generated ID
     response_data = response.json()
     assert response_data["name"] == payload["name"]
     assert response_data["job"] == payload["job"]
     assert "id" in response_data, "The server did not generate an ID for the user!"
-    print(f"\n[API DEBUG] User created successfully! Generated ID: {response_data['id']}")
+    print(
+        f"\n[API DEBUG] User created successfully! Generated ID: {response_data['id']}"
+    )
 
 
 def test_user_not_found():
@@ -51,7 +52,9 @@ def test_user_not_found():
     response = requests.get(f"{BASE_URL}/users/23")
 
     # The server must respond with the standard 404 code
-    assert response.status_code == 404, f"Expected 404, but received: {response.status_code}"
+    assert response.status_code == 404, (
+        f"Expected 404, but received: {response.status_code}"
+    )
 
 
 def test_access_secure_resource(auth_headers):
@@ -63,18 +66,19 @@ def test_access_secure_resource(auth_headers):
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["data"]["id"] == 4
-    print(f"\n[API DEBUG] Authorized access! Safely extracted user: {response_data['data']['first_name']}")
+    print(
+        f"\n[API DEBUG] Authorized access! Safely extracted user: {response_data['data']['first_name']}"
+    )
 
 
 def test_update_user_secure(auth_headers):
     """Test case for updating a user's data (PUT) within a secured environment."""
-    update_payload = {
-        "name": "Mihai Popescu Modificat",
-        "job": "Lead QA Engineer"
-    }
+    update_payload = {"name": "Mihai Popescu Modificat", "job": "Lead QA Engineer"}
 
     # Send the PUT request along with the payload and the secured Headers
-    response = requests.put(f"{BASE_URL}/users/4", json=update_payload, headers=auth_headers)
+    response = requests.put(
+        f"{BASE_URL}/users/4", json=update_payload, headers=auth_headers
+    )
 
     assert response.status_code == 200
     response_data = response.json()

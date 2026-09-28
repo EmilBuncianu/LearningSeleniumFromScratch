@@ -1,6 +1,7 @@
 import json
-import os
 import logging
+import os
+
 from selenium.webdriver.support.ui import WebDriverWait
 
 logger = logging.getLogger(__name__)

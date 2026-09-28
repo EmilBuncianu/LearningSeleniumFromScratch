@@ -1,9 +1,12 @@
 import logging
-from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
 
 logger = logging.getLogger(__name__)
+
+
 class BasePage:
     def __init__(self, driver):
         self.driver = driver
@@ -19,7 +22,9 @@ class BasePage:
         try:
             return self.wait.until(EC.visibility_of_element_located(locator))
         except TimeoutException:
-            print(f"❌ Error: Element with locator {locator} did not become visible within 10 seconds.")
+            print(
+                f"❌ Error: Element with locator {locator} did not become visible within 10 seconds."
+            )
             raise
 
     def click_element(self, locator):
@@ -28,7 +33,9 @@ class BasePage:
             # Ensure the element is clickable
             element = self.wait.until(EC.element_to_be_clickable(locator))
             # Optional: Automatically scroll to the element if it is a long page
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", element
+            )
             element.click()
         except Exception as e:
             print(f"❌ Error clicking on {locator}: {str(e)}")

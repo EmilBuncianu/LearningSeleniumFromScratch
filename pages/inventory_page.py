@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
+
 from pages.base_page import BasePage
 
 
@@ -34,6 +35,7 @@ class InventoryPage(BasePage):
         # Give the page a brief moment to load the scripts behind the button
         # NOTE: Since you implemented safe wrappers, you can safely experiment with removing these hardcoded delays later!
         import time
+
         time.sleep(1)
         self.click_element(self.CHECKOUT_BUTTON)
         # Ensure the page transition has completed successfully
@@ -47,6 +49,7 @@ class InventoryPage(BasePage):
 
     def finish_order(self):
         import time
+
         time.sleep(0.5)
         self.click_element(self.FINISH_BUTTON)
 
@@ -60,12 +63,13 @@ class InventoryPage(BasePage):
 
     def get_all_product_prices(self):
         # Wait dynamically for all price tags to be visible on the DOM
-        price_elements = self.wait.until(EC.visibility_of_all_elements_located(self.PRODUCT_PRICES))
+        price_elements = self.wait.until(
+            EC.visibility_of_all_elements_located(self.PRODUCT_PRICES)
+        )
         prices = []
         for element in price_elements:
             text_price = element.text.strip()
-            if text_price: # Ne asigurăm că elementul are text complet randat
+            if text_price:  # Ne asigurăm că elementul are text complet randat
                 clean_price = float(text_price.replace("$", ""))
                 prices.append(clean_price)
         return prices
-

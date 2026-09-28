@@ -4,10 +4,7 @@ import pytest
 def test_api_login_successful(api_client):
     """Validează un flux pozitiv de autentificare prin API-ul ReqRes."""
     # ReqRes are nevoie de un email valid din sistemul lor (ex: eve.holt@reqres.in)
-    payload = {
-        "email": "eve.holt@reqres.in",
-        "password": "cityslicker"
-    }
+    payload = {"email": "eve.holt@reqres.in", "password": "cityslicker"}
 
     # Trimitem cererea către endpoint-ul de login (/login se adaugă la https://reqres.in)
     response = api_client.post("/login", data=payload)
@@ -20,13 +17,9 @@ def test_api_login_successful(api_client):
     assert "token" in json_data, "Token-ul de autentificare lipsește din răspuns!"
 
 
-
 def test_api_login_invalid_credentials(api_client):
     """Validează comportamentul API-ului la date de autentificare greșite."""
-    payload = {
-        "username": "invalid_user",
-        "password": "wrong_password"
-    }
+    payload = {"username": "invalid_user", "password": "wrong_password"}
 
     response = api_client.post("/api/login", data=payload)
 
