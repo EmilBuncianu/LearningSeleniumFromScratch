@@ -20,11 +20,11 @@ jobs:
     steps:
     # 1. Clones the code from your repository into the runner container
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
 
     # 2. Configures Python (sets up a clean environment for execution)
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.4.0
       with:
         python-version: '3.12'
         # We removed the generic cache string to prevent structural search errors
