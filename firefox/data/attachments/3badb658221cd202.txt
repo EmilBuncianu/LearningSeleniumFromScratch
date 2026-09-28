@@ -1,0 +1,2 @@
+INFO     pages.base_page:base_page.py:17 Navigating to URL: https://saucedemo.com
+INFO     pages.base_page:base_page.py:60 Extracted text 'Epic sadface: Sorry, this user has been locked out.' from element: ('css selector', "h3[data-test='error']")

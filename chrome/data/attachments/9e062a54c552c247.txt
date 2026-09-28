@@ -1,0 +1,4 @@
+
+[API SECURITY] Successfully extracted Authorization token globally from conftest: QpwL5tke4Pnpja7X4
+
+[API DEBUG] Authorized access! Safely extracted user: Eve
