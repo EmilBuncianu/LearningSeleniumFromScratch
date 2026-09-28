@@ -9,7 +9,7 @@ on:
 
 jobs:
   test-automation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     # The matrix launches 3 isolated containers running simultaneously
     strategy:
