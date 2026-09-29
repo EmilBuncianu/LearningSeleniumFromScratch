@@ -1,18 +1,16 @@
 import os
-
 from pytest_bdd import given, scenarios, then, when
-
 from pages.inventory_page import InventoryPage
 from pages.login_page import LoginPage
 from utils.data_loader import load_test_data
 
+# FIXED: Adăugat încă un os.path.dirname pentru a ieși complet din structura tests/
 current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
+project_root = os.path.dirname(os.path.dirname(current_dir))
 feature_path = os.path.join(project_root, "features", "purchase.feature")
 
 scenarios(feature_path)
 test_data = load_test_data()
-
 
 @given("I am a logged-in user on the inventory page")
 def logged_in_user(driver):
@@ -22,14 +20,12 @@ def logged_in_user(driver):
     login_page.navigate_to_login()
     login_page.login(valid_credentials["username"], valid_credentials["password"])
 
-
 @when("I add the backpack to the cart and proceed to checkout")
 def add_product_and_checkout(driver):
     inventory_page = InventoryPage(driver)
     inventory_page.add_backpack_to_cart()
     inventory_page.go_to_cart()
     inventory_page.proceed_to_checkout()
-
 
 @when("I fill in the checkout information")
 def fill_shipping_details(driver):
@@ -41,7 +37,6 @@ def fill_shipping_details(driver):
         checkout_info["postal_code"],
     )
     inventory_page.finish_order()
-
 
 @then("the order should be finalized with a success message")
 def verify_order_completion(driver):

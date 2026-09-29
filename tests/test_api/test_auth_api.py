@@ -3,11 +3,11 @@ import pytest
 
 def test_api_login_successful(api_client):
     """Validează un flux pozitiv de autentificare prin API-ul ReqRes."""
-    # ReqRes are nevoie de un email valid din sistemul lor (ex: eve.holt@reqres.in)
+    # ReqRes are nevoie de un email valid din sistemul lor
     payload = {"email": "eve.holt@reqres.in", "password": "cityslicker"}
 
-    # Trimitem cererea către endpoint-ul de login (/login se adaugă la https://reqres.in)
-    response = api_client.post("/login", data=payload)
+    # FIXED: Am schimbat 'data=' în 'json_data=' pentru a trimite un JSON valid către microserviciu
+    response = api_client.post("/login", json_data=payload)
 
     # Verificăm statusul de succes 200
     assert response.status_code == 200, f"Răspuns neașteptat: {response.status_code}"
@@ -19,9 +19,14 @@ def test_api_login_successful(api_client):
 
 def test_api_login_invalid_credentials(api_client):
     """Validează comportamentul API-ului la date de autentificare greșite."""
-    payload = {"username": "invalid_user", "password": "wrong_password"}
+    # ReqRes cere în mod specific câmpul 'email', chiar dacă valoarea este greșită, pentru a valida payload-ul
+    payload = {"email": "invalid_user@reqres.in", "password": "wrong_password"}
 
-    response = api_client.post("/api/login", data=payload)
+    # FIXED: Am eliminat '/api' duplicat din endpoint și am trecut la 'json_data='
+    response = api_client.post("/login", json_data=payload)
 
-    # Backend-ul ar trebui să întoarcă 401 Unauthorized sau 400 Bad Request
-    assert response.status_code in [400, 401]
+    # ReqRes returnează 400 Bad Request pentru utilizatori lipsă/invalizi în baza lor de date
+    assert response.status_code == 400, f"Așteptat status 400, dar s-a primit {response.status_code}"
+
+    json_data = response.json()
+    assert "error" in json_data, "Mesajul de eroare lipsește din răspuns!"

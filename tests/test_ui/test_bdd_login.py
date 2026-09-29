@@ -1,10 +1,15 @@
+import os
 from pytest_bdd import given, parsers, scenarios, then, when
-
 from pages.login_page import LoginPage
 from utils.data_loader import load_test_data
 
-# Link this file to the Gherkin feature file
-scenarios("../features/login.feature")
+# FIXED: Calculăm calea absolută mergând 2 directoare în sus până în rădăcina proiectului
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(current_dir))
+feature_path = os.path.join(project_root, "features", "login.feature")
+
+# Legăm fișierul de feature folosind calea absolută sigură
+scenarios(feature_path)
 
 # Load your thread-safe JSON test data
 test_data = load_test_data()
@@ -31,25 +36,21 @@ def verify_redirection(driver):
     assert "/inventory.html" in driver.current_url
 
 
-# We reuse the existing @given('I navigate to the login page') defined at the top of your file
-
-
-# 🚀 REPARAT CU REGEX: (.*) acceptă nativ caractere alfanumerice, speciale sau text complet gol
-@when(
-    parsers.re(
-        r"I enter an invalid username (?P<username>.*) and password (?P<password>.*)"
-    )
-)
+@when(parsers.re(r"I enter an invalid username (?P<username>.*) and password (?P<password>.*)"))
 def enter_invalid_credentials(driver, username, password):
-    """Submits the login form handling empty strings or regular text variations seamlessly via regex mapping."""
+    """Submits the login form handling empty strings or regular text variations seamlessly."""
     login_page = LoginPage(driver)
-    login_page.login(username, password)
+
+    # Curățăm ghilimelele dacă datele vin sub formă de string gol în BDD Matrix
+    user = "" if username == '""' or username is None else username
+    pwd = "" if password == '""' or password is None else password
+
+    login_page.login(user, pwd)
 
 
-# 🚀 REPARAT CU REGEX: Potrivește textul de eroare indiferent de lungime
 @then(parsers.re(r"I should see the login error message (?P<expected_error>.*)"))
 def verify_error_message(driver, expected_error):
-    """Extracts the DOM alert text and asserts it matches the expected validation rules via regex parsing."""
+    """Extracts the DOM alert text and asserts it matches the expected validation rules."""
     login_page = LoginPage(driver)
     alert_text = login_page.get_alert_text()
     assert expected_error == alert_text

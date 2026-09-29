@@ -38,8 +38,9 @@ jobs:
 
     - name: Run Selenium Tests
       run: |
-        # Salvăm rezultatele Allure brute într-un folder specific fiecărui browser
-        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest -n 2 --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html --alluredir=allure-results/${{ matrix.browser }}
+        mkdir -p raport allure-results
+        # FIXED: Corectat path-ul de aluredir pentru a genera rezultatele brut într-un folder unic per browser
+        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest -n 2 --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html --alluredir=allure-results
 
     - name: Upload Standard Test Report Artifact
       if: always()
@@ -54,13 +55,14 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: allure-results-${{ matrix.browser }}
-        path: allure-results/${{ matrix.browser }}
+        path: allure-results/  # FIXED: Încărcăm tot conținutul folderului generat de pytest
         retention-days: 5
 
   deploy-reports:
     needs: test-automation
     runs-on: ubuntu-22.04
-    if: always()
+    # Rulează doar dacă jobul anterior s-a finalizat (chiar dacă unele teste au eșuat), dar nu dacă pipeline-ul a fost anulat
+    if: always() && !cancelled()
     permissions:
       contents: write
 
@@ -70,7 +72,6 @@ jobs:
 
     - name: Checkout existing gh-pages branch to preserve history
       uses: actions/checkout@v4.2.2
-      if: always()
       with:
         ref: gh-pages
         path: gh-pages-root
@@ -89,19 +90,18 @@ jobs:
 
     - name: Install Allure Commandline Tool via NPM
       run: |
-        # Instalăm Allure global și curat folosind npm, eliminând erorile de wget/tar
         sudo npm install -g allure-commandline --unsafe-perm=true
 
     - name: Build Structure and Inject History
       run: |
         mkdir -p public-site/chrome public-site/firefox public-site/edge
         
-        # Copiem istoricul anterior doar dacă folderul există fizic (previne crash-ul la prima rulare)
-        if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/ || true; fi
-        if [ -d "gh-pages-root/firefox/history" ]; then cp -r gh-pages-root/firefox/history downloaded-results/allure-results-firefox/ || true; fi
-        if [ -d "gh-pages-root/edge/history" ]; then cp -r gh-pages-root/edge/history downloaded-results/allure-results-edge/ || true; fi
+        # FIXED: Corectat maparea directoarelor descărcate. download-artifact@v4 le pune în subfoldere cu numele artefactului!
+        if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/history || true; fi
+        if [ -d "gh-pages-root/firefox/history" ]; then cp -r gh-pages-root/firefox/history downloaded-results/allure-results-firefox/history || true; fi
+        if [ -d "gh-pages-root/edge/history" ]; then cp -r gh-pages-root/edge/history downloaded-results/allure-results-edge/history || true; fi
         
-        # Generăm rapoartele HTML statice prin binarul instalat global
+        # Generăm rapoartele statice citind exact din maparea v4 de artefacte
         allure generate downloaded-results/allure-results-chrome -o public-site/chrome --clean
         allure generate downloaded-results/allure-results-firefox -o public-site/firefox --clean
         allure generate downloaded-results/allure-results-edge -o public-site/edge --clean
