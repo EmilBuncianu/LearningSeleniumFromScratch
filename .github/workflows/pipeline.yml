@@ -38,9 +38,10 @@ jobs:
 
     - name: Run Selenium Tests
       run: |
+        # Creăm directoarele dedicate pentru raportări
         mkdir -p raport allure-results
-        # FIXED: Corectat path-ul de aluredir pentru a genera rezultatele brut într-un folder unic per browser
-        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest -n 2 --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html --alluredir=allure-results
+        # FIXED: Exclus "-n 2" pentru a elimina crash-ul de sintaxă (Exit Code 4) și adăugat calea către directorul 'tests/'
+        xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest tests/ --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html --alluredir=allure-results
 
     - name: Upload Standard Test Report Artifact
       if: always()
@@ -55,13 +56,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: allure-results-${{ matrix.browser }}
-        path: allure-results/  # FIXED: Încărcăm tot conținutul folderului generat de pytest
+        path: allure-results/
         retention-days: 5
 
   deploy-reports:
     needs: test-automation
     runs-on: ubuntu-22.04
-    # Rulează doar dacă jobul anterior s-a finalizat (chiar dacă unele teste au eșuat), dar nu dacă pipeline-ul a fost anulat
     if: always() && !cancelled()
     permissions:
       contents: write
@@ -96,12 +96,12 @@ jobs:
       run: |
         mkdir -p public-site/chrome public-site/firefox public-site/edge
         
-        # FIXED: Corectat maparea directoarelor descărcate. download-artifact@v4 le pune în subfoldere cu numele artefactului!
+        # Copiem istoricul Allure din gh-pages în rezultatele noi descărcate
         if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/history || true; fi
         if [ -d "gh-pages-root/firefox/history" ]; then cp -r gh-pages-root/firefox/history downloaded-results/allure-results-firefox/history || true; fi
         if [ -d "gh-pages-root/edge/history" ]; then cp -r gh-pages-root/edge/history downloaded-results/allure-results-edge/history || true; fi
         
-        # Generăm rapoartele statice citind exact din maparea v4 de artefacte
+        # Generăm rapoartele statice în site-ul public final
         allure generate downloaded-results/allure-results-chrome -o public-site/chrome --clean
         allure generate downloaded-results/allure-results-firefox -o public-site/firefox --clean
         allure generate downloaded-results/allure-results-edge -o public-site/edge --clean
