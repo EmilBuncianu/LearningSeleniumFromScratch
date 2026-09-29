@@ -1,28 +1,35 @@
+import logging
 from selenium.webdriver.common.by import By
-
 from pages.base_page import BasePage
+
+# Inițializăm logger-ul pentru acest fișier
+logger = logging.getLogger(__name__)
 
 
 class LoginPage(BasePage):
-    # Stable locators for SauceDemo
     USERNAME_INPUT = (By.ID, "user-name")
     PASSWORD_INPUT = (By.ID, "password")
     LOGIN_BUTTON = (By.ID, "login-button")
-    # The error alert message appears inside an h3 container on this platform
-    ALERT_MESSAGE = (By.CSS_SELECTOR, "h3[data-test='error']")
-
-    def __init__(self, driver):
-        super().__init__(driver)
-        # SauceDemo renders the authentication form directly on the root URL path
-        self.path = "/"
+    ERROR_CONTAINER = (By.CSS_SELECTOR, "h3[data-test='error']")
 
     def navigate_to_login(self):
-        self.open_url(self.path)
+        logger.info("Deschidem pagina principală de autentificare...")
+        self.open_url("/")
 
     def login(self, username, password):
+        logger.info(f"Încercăm autentificarea pentru utilizatorul: '{username}'")
+
+        if not username:
+            logger.warning("Câmpul 'username' trimis este gol!")
+
         self.type_text(self.USERNAME_INPUT, username)
         self.type_text(self.PASSWORD_INPUT, password)
+
+        logger.info("Se execută click pe butonul de Login.")
         self.click_element(self.LOGIN_BUTTON)
 
     def get_alert_text(self):
-        return self.get_element_text(self.ALERT_MESSAGE)
+        logger.info("Preluăm mesajul de eroare afișat pe interfață.")
+        error_text = self.get_element_text(self.ERROR_CONTAINER)
+        logger.error(f"Eroare detectată pe UI: '{error_text}'")
+        return error_text
