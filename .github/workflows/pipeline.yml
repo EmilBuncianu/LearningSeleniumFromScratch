@@ -27,8 +27,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd allure-pytest
-        sudo apt-get update
-        # FIXED: Added ttf-dejavu to prevent headless UI layout breaking due to missing standard system fonts
+        
+        # FIXED: Ștergem cache-ul parțial sau corupt de apt-get pentru a preveni blocarea în buclă infinită
+        sudo rm -rf /var/lib/apt/lists/*
+        
+        # FIXED: Forțăm executarea update-ului trecând peste sursele indisponibile temporar (--fix-missing)
+        sudo apt-get update --fix-missing || true
+        
+        # Instalăm pachetele necesare pentru rulare headless și fonturi
         sudo apt-get install -y xvfb ttf-dejavu
 
     - name: Setup Microsoft Edge
