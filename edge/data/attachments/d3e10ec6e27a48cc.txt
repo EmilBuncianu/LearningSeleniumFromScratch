@@ -1,0 +1,2 @@
+[32mINFO    [0m pages.base_page:base_page.py:17 Navigating to URL: https://saucedemo.com
+[32mINFO    [0m pages.base_page:base_page.py:60 Extracted text 'Thank you for your order!' from element: ('class name', 'complete-header')

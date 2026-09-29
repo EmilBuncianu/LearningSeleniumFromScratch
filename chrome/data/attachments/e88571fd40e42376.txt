@@ -1,2 +1,0 @@
-
-[API DEBUG] First user found: michael.lawson@reqres.in

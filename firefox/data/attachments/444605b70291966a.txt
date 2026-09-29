@@ -1,2 +1,0 @@
-
-[API DEBUG] Resource successfully updated using Bearer authorization!
