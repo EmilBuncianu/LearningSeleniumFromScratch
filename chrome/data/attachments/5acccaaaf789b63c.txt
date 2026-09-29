@@ -1,2 +1,0 @@
-INFO     pages.base_page:base_page.py:31 Navigating to URL: https://www.saucedemo.com/
-INFO     pages.base_page:base_page.py:67 Extracted text 'Epic sadface: Username is required' from element: ('css selector', "h3[data-test='error']")

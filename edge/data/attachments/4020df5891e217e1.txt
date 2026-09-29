@@ -1,0 +1,2 @@
+INFO     tests.test_api.api_client:api_client.py:24 [API REQ] PUT către endpoint-ul: /users/4
+INFO     tests.test_api.api_client:api_client.py:26 [API RES] Status primit: 200
