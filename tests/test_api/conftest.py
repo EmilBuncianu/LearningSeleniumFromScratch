@@ -2,15 +2,17 @@ import pytest
 import requests
 from tests.test_api.api_client import APIClient
 
+
 @pytest.fixture(scope="session")
 def api_client(base_url_api):
     """Creează instanța globală de APIClient folosită în teste."""
     return APIClient(base_url=base_url_api)
 
+
 @pytest.fixture(scope="session")
 def auth_headers():
     """Generează token-ul de securitate din backend și returnează headerele corecte."""
-    # FIXED: Modificat din 'https://reqres.in' în 'https://reqres.in/api' ca să nu mai returneze HTML
+    # REPARAT COMPLET: Adăugat /api ca să trimitem cererea direct către endpoint-ul corect de backend
     base_url = "https://reqres.in/api"
     login_payload = {"email": "eve.holt@reqres.in", "password": "cityslicker"}
 
@@ -19,6 +21,7 @@ def auth_headers():
 
     token = response.json().get("token")
     return {
-        "Authorization": f"Bearer {token}",
+        # Trimitem token-ul brut direct, exact așa cum îl așteaptă serverul ReqRes
+        "Authorization": token,
         "Content-Type": "application/json",
     }
