@@ -28,14 +28,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd allure-pytest
         
-        # FIXED: Ștergem cache-ul parțial sau corupt de apt-get pentru a preveni blocarea în buclă infinită
+        # FIXED: Curățăm listele blocate și instalăm direct pachetele cu ignorarea erorilor de index extern
         sudo rm -rf /var/lib/apt/lists/*
+        sudo apt-get update -o Acquire::Retries=3 -q || true
         
-        # FIXED: Forțăm executarea update-ului trecând peste sursele indisponibile temporar (--fix-missing)
-        sudo apt-get update --fix-missing || true
-        
-        # Instalăm pachetele necesare pentru rulare headless și fonturi
-        sudo apt-get install -y xvfb ttf-dejavu
+        # FIXED: Adăugat flag-ul --fix-missing direct la instalare pentru a preveni blocarea jobului
+        sudo apt-get install -y --fix-missing xvfb ttf-dejavu
 
     - name: Setup Microsoft Edge
       if: matrix.browser == 'edge'
@@ -101,11 +99,10 @@ jobs:
       run: |
         mkdir -p public-site/chrome public-site/firefox public-site/edge
         
-        # FIXED: Automatically copy the local index.html to the public directory root if it exists
+        # Verificăm și copiem fișierul index.html în rădăcină
         if [ -f "index.html" ]; then
           cp index.html public-site/index.html
         else
-          # Fallback: Dynamically generate an English navigation dashboard if index.html isn't found locally
           cat << 'EOF' > public-site/index.html
           <!DOCTYPE html>
           <html lang="en">
@@ -153,12 +150,12 @@ jobs:
           EOF
         fi
         
-        # Recover historical metrics trends from gh-pages deployment branch paths
+        # Injectăm istoricul Allure din gh-pages în rezultatele noi
         if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/history || true; fi
         if [ -d "gh-pages-root/firefox/history" ]; then cp -r gh-pages-root/firefox/history downloaded-results/allure-results-firefox/history || true; fi
         if [ -d "gh-pages-root/edge/history" ]; then cp -r gh-pages-root/edge/history downloaded-results/allure-results-edge/history || true; fi
         
-        # Compile static web targets utilizing global Allure bundle generation
+        # Generăm rapoartele statice în site-ul public final
         allure generate downloaded-results/allure-results-chrome -o public-site/chrome --clean
         allure generate downloaded-results/allure-results-firefox -o public-site/firefox --clean
         allure generate downloaded-results/allure-results-edge -o public-site/edge --clean
