@@ -57,8 +57,39 @@ jobs:
         path: allure-results/
         retention-days: 5
 
+  performance-testing:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+
+    - name: Set up Python
+      uses: actions/setup-python@v5.4.0
+      with:
+        python-version: '3.12'
+
+    - name: Install Performance Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests locust
+
+    - name: Run Headless Locust Stress Test
+      run: |
+        mkdir -p performance-results
+        # Executăm testul de stres timp de 45 de secunde cu 30 de utilizatori virtuali concurenți
+        locust -f performance/locustfile.py --headless -u 30 -r 3 --run-time 45s --host https://reqres.in --html performance-results/raport_stres.html
+
+    - name: Upload Performance Report Artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: raport-performanta-locust
+        path: performance-results/raport_stres.html
+        retention-days: 5
+
   deploy-reports:
-    needs: test-automation
+    # FIXED: Jobul de deployment așteaptă acum finalizarea ambelor suite (UI Automation + Performance Testing)
+    needs: [test-automation, performance-testing]
     runs-on: ubuntu-22.04
     if: always() && !cancelled()
     permissions:
@@ -75,7 +106,7 @@ jobs:
         path: gh-pages-root
       continue-on-error: true
 
-    - name: Download all Allure Artifacts from previous job
+    - name: Download all Artifacts from previous jobs
       uses: actions/download-artifact@v4
       with:
         path: downloaded-results
@@ -92,10 +123,13 @@ jobs:
 
     - name: Build Structure and Inject History
       run: |
-        mkdir -p public-site/chrome public-site/firefox public-site/edge
+        mkdir -p public-site/chrome public-site/firefox public-site/edge public-site/performance
         
-        # FIXED: Copiem fișierul index.html din rădăcina repository-ului direct în folderul public final
+        # Copiem fișierul index.html din rădăcină în folderul public final
         cp index.html public-site/index.html || true
+        
+        # FIXED: Mutăm raportul static generat de Locust direct în structura publică de pagini
+        cp downloaded-results/raport-performanta-locust/raport_stres.html public-site/performance/index.html || true
         
         # Injectăm istoricul Allure din rulările anterioare salvate pe gh-pages
         if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/history || true; fi
