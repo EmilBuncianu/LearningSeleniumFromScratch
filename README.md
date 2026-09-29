@@ -1,61 +1,90 @@
-# Custom Web Automation Framework (Python + Selenium + PyTest)
+# 🚀 Learning Selenium From Scratch
 
-This project represents a robust, highly scalable, and production-ready web automation framework built completely from scratch. The architecture strictly follows industry best practices (Enterprise-grade QA) with a strong emphasis on clean maintainability, fast execution, and advanced logging/reporting capabilities.
+![Automation Status](https://github.com)
+[![Allure Report](https://shields.io)](https://github.io)
 
-## 🚀 Core Technologies & Frameworks
+A fully modularized, enterprise-grade hybrid test automation framework built in **Python** using **PyTest**. The project integrates robust backend service validations (**API Testing**) and graphical web interface automation (**Selenium UI Testing**), highly optimized for parallel execution within modern CI/CD pipelines.
 
-*   **Programming Language:** Python 3.14+
-*   **Core Automation Engine:** Selenium WebDriver (v4)
-*   **Test Runner Engine:** PyTest
-*   **Design Pattern:** Page Object Model (POM)
-*   **Reporting Dashboard:** pytest-html (Interactive HTML report with embedded failure snapshots and step-by-step logging charts)
+---
 
 ## 🏗️ Project Architecture
 
-The codebase is engineered modularly to enforce a strict Separation of Concerns (SoC) layout:
-
 ```text
 LearningSeleniumFromScratch/
-│
-├── conftest.py               # Global configurations, lifecycle hooks, and driver engine setups
-├── pytest.ini                # PyTest configurations managing real-time system logging buffers
-├── raport/
-│   └── raport_teste.html     # Automatically generated interactive visual dashboard report
-│
-├── pages/                    # Page Object Layers (Encapsulating element locators and behaviors)
-│   ├── __init__.py
-│   ├── base_page.py          # Core interaction wrapper (Explicit Waits, fluid scrolling, clicking, typing)
-│   ├── login_page.py         # Authentication layout mapping and functional action methods
-│   └── inventory_page.py     # Inventory item components, forms, filters, and checkout step layers
-│
-└── tests/                    # Executable Test Suite Layers (Functional verification and assertions)
-    ├── __init__.py
-    ├── test_login.py         # Isolation scripts for verification (Positive & Parametrizied Negative cases)
-    └── test_inventory.py     # Business flow validation scripts (End-to-End purchase & Math sorting orders)
+├── .github/workflows/
+│   └── workflow.yml        # Unified GitHub Actions pipeline (Multi-browser Matrix)
+├── data/
+│   └── test_env.json       # Global environment configurations (Target base URLs)
+├── features/
+│   ├── login.feature       # Gherkin BDD login execution scenarios
+│   └── purchase.feature    # Gherkin BDD end-to-end checkout flow scenarios
+├── pages/
+│   ├── base_page.py        # Custom Selenium wrapper with dynamic explicit waits
+│   ├── login_page.py       # Page Object Model locators & methods for Login
+│   └── inventory_page.py   # Page Object Model locators & methods for Inventory/Checkout
+├── tests/
+│   ├── test_api/           # Dedicated REST API testing suite (ReqRes)
+│   │   ├── api_client.py   # HTTP Client Wrapper over the requests library
+│   │   ├── conftest.py     # API-specific fixtures (Session setup & auth token caching)
+│   │   └── test_api.py     # Functional REST API assertions & CRUD validations
+│   └── test_ui/            # Dedicated UI testing suite using Selenium
+│       ├── conftest.py     # WebDriver initializations (Headless Chrome/FF/Edge) & failure hooks
+│       ├── test_login.py   # Data-Driven UI authentication tests
+│       └── test_sorting.py # Algorithmic DOM price sorting engine verifications
+└── pytest.ini              # Main global test suite configuration file
 ```
 
-## 💎 Key Features & Applied Best Practices
+## 🛠️ Local Installation & Configuration
 
-1.  **Page Object Model (POM):** Element mapping structures and webpage interactors are abstracted into dedicated controller classes. Test scripts contain zero hardcoded selectors, ensuring effortless code maintenance when application layouts shift.
-2.  **Explicit Synchronization Waits:** Completely eliminates automated test flakiness by exclusively leveraging dynamic `WebDriverWait` mechanisms tied to targeted `visibility_of_element_located` states.
-3.  **Advanced Driver Sandboxing (ChromeOptions):** The driver launches in **Incognito mode**, with **Headless mode** enabled for hyper-fast execution. It embeds specialized proxy switches to block intrusive browser credential pop-ups and mask runtime automation metadata (Anti-bot simulation).
-4.  **Data-Driven Test Parametrization:** Negative authentication edge cases leverage `@pytest.mark.parametrize` matrices. This injects multiple unique credentials and dynamic assertion variables into a single clean test method.
-5.  **Fixture Reusability (DRY Principle):** Successful application authentication loops are handled natively via a custom PyTest fixture (`logged_in_driver`). This provides inventory tests with an active, pre-authenticated driver instance, eliminating redundant code blocks.
-6.  **Granular Low-Level Logging Engine:** Every action (URL loading, field interaction, click sequences, data scraping) maps out structured timestamp metrics containing module class files and exact runtime execution lines.
-7.  **Failure Capture & HTML Embedding:** Built with custom runtime report wrapper hooks that intercept failing cases. It captures an immediate UI state snapshot to the `screenshots/` directory and embeds it directly inside the HTML report rows for fast debugging.
-
-## 🛠️ Installation & Execution
-
-### 1. Set Up Environment Dependencies
-Ensure your active python virtual environment (`.venv`) is enabled, and deploy the configuration package library bundles:
+### 1. Clone the Repository and Setup a Virtual Environment
 ```bash
-pip install selenium pytest pytest-html
+git clone https://github.com
+cd LearningSeleniumFromScratch
+
+# Create and activate an isolated Python virtual environment
+python -m venv .venv
+
+# On Windows:
+.venv\Scripts\activate
+
+# On macOS/Linux:
+source .venv/bin/activate
 ```
 
-### 2. Execute the Full Automated Suite
-Trigger the global test execution script directly from your root project directory terminal workspace to run all 7 isolated tests uninhibited in the background (Headless mode):
+### 2. Install Project Dependencies
 ```bash
-python -m pytest -v -s --html=raport/raport_teste.html
+pip install -r requirements.txt
 ```
 
-Once the test run loop completes, open the newly generated `raport/raport_teste.html` file in any standard browser to view the interactive test execution summary tables!
+---
+
+## 🚀 Running Tests Locally from Terminal
+
+### Execute the Backend REST API Test Suite
+```bash
+pytest tests/test_api/ -v
+```
+
+### Execute the Graphical Selenium UI Test Suite
+```bash
+# Run using the default browser configuration (Chrome Headless)
+pytest tests/test_ui/ -v
+
+# Force execution on specific targeted browsers via the command line
+pytest tests/test_ui/ --browser=firefox -v
+pytest tests/test_ui/ --browser=edge -v
+```
+
+### Generate Standalone Local PyTest HTML Reports
+```bash
+pytest tests/test_ui/ --html=raport/report.html --self-contained-html -v
+```
+
+---
+
+## ☁️ CI/CD Pipeline Infrastructure (GitHub Actions)
+
+Upon every code `push` or `pull_request` event targeting the `main` branch, an automated deployment pipeline executes seamlessly:
+1. **Matrix Strategy Isolation**: Orchestrates the graphical test suite concurrently across three distinct virtualized environment nodes running **Google Chrome**, **Mozilla Firefox**, and **Microsoft Edge**.
+2. **Allure History Injection**: Automatically tracks and pulls structural execution records from the historical `gh-pages` branch to compute stability metrics and execution trend curves.
+3. **Automated Static Deployment**: Compiles the analytical browser outputs and deploys an interactive cross-browser entry dashboard directly to **GitHub Pages** post-execution.

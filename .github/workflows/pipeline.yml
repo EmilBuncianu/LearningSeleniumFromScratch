@@ -28,7 +28,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd allure-pytest
         sudo apt-get update
-        sudo apt-get install -y xvfb
+        # FIXED: Added ttf-dejavu to prevent headless UI layout breaking due to missing standard system fonts
+        sudo apt-get install -y xvfb ttf-dejavu
 
     - name: Setup Microsoft Edge
       if: matrix.browser == 'edge'
@@ -38,9 +39,7 @@ jobs:
 
     - name: Run Selenium Tests
       run: |
-        # Creăm directoarele dedicate pentru raportări
         mkdir -p raport allure-results
-        # FIXED: Exclus "-n 2" pentru a elimina crash-ul de sintaxă (Exit Code 4) și adăugat calea către directorul 'tests/'
         xvfb-run --server-args="-screen 0 1024x768x24" python -m pytest tests/ --browser ${{ matrix.browser }} --html=raport/raport_teste.html --self-contained-html --alluredir=allure-results
 
     - name: Upload Standard Test Report Artifact
@@ -96,12 +95,64 @@ jobs:
       run: |
         mkdir -p public-site/chrome public-site/firefox public-site/edge
         
-        # Copiem istoricul Allure din gh-pages în rezultatele noi descărcate
+        # FIXED: Automatically copy the local index.html to the public directory root if it exists
+        if [ -f "index.html" ]; then
+          cp index.html public-site/index.html
+        else
+          # Fallback: Dynamically generate an English navigation dashboard if index.html isn't found locally
+          cat << 'EOF' > public-site/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>QA Automation - Test Execution Dashboard</title>
+              <style>
+                  :root { --bg: #f4f6f9; --card: #fff; --text: #2d3748; --muted: #718096; --shadow: 0 4px 6px rgba(0,0,0,0.05); }
+                  body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+                  header { text-align: center; margin-bottom: 40px; }
+                  h1 { font-size: 2.5rem; margin: 0 0 10px 0; color: #1a202c; }
+                  .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 900px; }
+                  .card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 30px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+                  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; border-radius: 12px 12px 0 0; }
+                  .chrome::before { background: #4285F4; } .firefox::before { background: #FF7139; } .edge::before { background: #0078D7; }
+                  .btn { display: inline-block; text-decoration: none; padding: 12px; color: #fff; border-radius: 8px; font-weight: 600; margin-top: 20px; }
+                  .chrome .btn { background: #4285F4; } .firefox .btn { background: #FF7139; } .edge .btn { background: #0078D7; }
+              </style>
+          </head>
+          <body>
+              <header>
+                  <h1>Test Automation Reports</h1>
+                  <p>Select a targeted browser execution path below to view the interactive live Allure Dashboard</p>
+              </header>
+              <div class="container">
+                  <div class="card chrome">
+                      <h2>Google Chrome</h2>
+                      <p>UI and API testing suite metrics executed inside clean Chromium environments.</p>
+                      <a href="./chrome/" class="btn">Open Report</a>
+                  </div>
+                  <div class="card firefox">
+                      <h2>Mozilla Firefox</h2>
+                      <p>Cross-browser UI scenarios verified over standard GeckoDriver engine runtimes.</p>
+                      <a href="./firefox/" class="btn">Open Report</a>
+                  </div>
+                  <div class="card edge">
+                      <h2>Microsoft Edge</h2>
+                      <p>Modular functional tests deployed over specialized enterprise Linux architectures.</p>
+                      <a href="./edge/" class="btn">Open Report</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+        fi
+        
+        # Recover historical metrics trends from gh-pages deployment branch paths
         if [ -d "gh-pages-root/chrome/history" ]; then cp -r gh-pages-root/chrome/history downloaded-results/allure-results-chrome/history || true; fi
         if [ -d "gh-pages-root/firefox/history" ]; then cp -r gh-pages-root/firefox/history downloaded-results/allure-results-firefox/history || true; fi
         if [ -d "gh-pages-root/edge/history" ]; then cp -r gh-pages-root/edge/history downloaded-results/allure-results-edge/history || true; fi
         
-        # Generăm rapoartele statice în site-ul public final
+        # Compile static web targets utilizing global Allure bundle generation
         allure generate downloaded-results/allure-results-chrome -o public-site/chrome --clean
         allure generate downloaded-results/allure-results-firefox -o public-site/firefox --clean
         allure generate downloaded-results/allure-results-edge -o public-site/edge --clean
