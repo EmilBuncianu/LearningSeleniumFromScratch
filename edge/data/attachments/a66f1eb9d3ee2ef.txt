@@ -1,4 +1,0 @@
-INFO     pages.login_page:login_page.py:16 Deschidem pagina principală de autentificare...
-INFO     pages.base_page:base_page.py:36 Navigating to URL: https://www.saucedemo.com/
-WARNING  pages.base_page:base_page.py:133 📊 [VISUAL SCORE] Mismatch for 'login_page_layout': 4.49%
-INFO     pages.base_page:base_page.py:140 ✅ [VISUAL PASS] Diff (4.49%) is within tolerance.
