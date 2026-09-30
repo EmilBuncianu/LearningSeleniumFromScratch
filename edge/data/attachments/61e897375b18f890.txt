@@ -1,0 +1,3 @@
+INFO     tests.test_api.api_client:api_client.py:9 Client API instanțiat cu succes pentru URL-ul: https://reqres.in/api
+INFO     tests.test_api.api_client:api_client.py:12 [API REQ] GET către endpoint-ul: /users | Params: {'page': 2}
+INFO     tests.test_api.api_client:api_client.py:14 [API RES] Status primit: 200

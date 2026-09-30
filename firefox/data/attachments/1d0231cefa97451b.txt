@@ -1,0 +1,2 @@
+INFO     tests.test_api.api_client:api_client.py:18 [API REQ] POST către endpoint-ul: /login
+INFO     tests.test_api.api_client:api_client.py:20 [API RES] Status primit: 400

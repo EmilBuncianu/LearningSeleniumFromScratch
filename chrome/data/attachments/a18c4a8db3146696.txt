@@ -1,0 +1,2 @@
+INFO     pages.login_page:login_page.py:20 Încercăm autentificarea pentru utilizatorul: 'standard_user'
+INFO     pages.login_page:login_page.py:28 Se execută click pe butonul de Login.

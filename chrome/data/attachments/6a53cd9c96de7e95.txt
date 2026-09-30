@@ -1,0 +1,5 @@
+INFO     pages.login_page:login_page.py:16 Deschidem pagina principală de autentificare...
+INFO     pages.base_page:base_page.py:36 Navigating to URL: https://www.saucedemo.com/
+INFO     pages.login_page:login_page.py:20 Încercăm autentificarea pentru utilizatorul: 'standard_user'
+INFO     pages.login_page:login_page.py:28 Se execută click pe butonul de Login.
+INFO     pages.base_page:base_page.py:87 Extracted text 'Thank you for your order!' from element: ('class name', 'complete-header')
