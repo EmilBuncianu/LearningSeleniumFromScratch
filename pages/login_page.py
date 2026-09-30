@@ -33,3 +33,18 @@ class LoginPage(BasePage):
         error_text = self.get_element_text(self.ERROR_CONTAINER)
         logger.error(f"Eroare detectată pe UI: '{error_text}'")
         return error_text
+
+
+
+
+
+def test_login_page_visual_layout(driver):
+    """Verifică automat dacă designul paginii de login nu s-a decalat (CSS/Imagini)."""
+    login_page = LoginPage(driver)
+
+    # Navigăm pe pagină
+    login_page.navigate_to_login()
+
+    # Verificăm vizual structura paginii
+    # Prima rulare locală va salva imaginea în tests/visual_baselines/login_page_layout.png
+    login_page.assert_visual_baseline("login_page_layout", threshold_percent=0.5)
