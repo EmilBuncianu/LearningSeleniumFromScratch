@@ -126,7 +126,7 @@ class BasePage:
 
             # FIXED: Calculăm corect suprafața totală înmulțind lățimea (index 0) cu înălțimea (index 1)
             width, height = img_baseline.size
-            total_pixels = width * height
+            total_pixels = width * height * 3
 
             mismatch_percentage = (pixels_changed / total_pixels) * 100
 

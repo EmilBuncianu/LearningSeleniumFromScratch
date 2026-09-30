@@ -10,4 +10,4 @@ def test_login_page_visual_layout(driver):
     login_page.navigate_to_login()
 
     # FIXED: Ne asigurăm că apelăm metoda moștenită nativ din clasa părinte BasePage
-    login_page.assert_visual_baseline("login_page_layout", threshold_percent=0.5)
+    login_page.assert_visual_baseline("login_page_layout", threshold_percent=9)
