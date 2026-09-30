@@ -1,2 +1,0 @@
-INFO     tests.test_api.api_client:api_client.py:30 [API REQ] DELETE către endpoint-ul: /users/2
-INFO     tests.test_api.api_client:api_client.py:32 [API RES] Status primit: 204

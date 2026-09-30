@@ -1,2 +1,0 @@
-
-[DEBUG] App prices extracted after sorting sequence: [7.99, 9.99, 15.99, 15.99, 29.99, 49.99]
