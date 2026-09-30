@@ -120,9 +120,14 @@ class BasePage:
             return True
         else:
             diff.save(diff_path)
-            stat = diff.getdata()
-            pixels_changed = sum(1 for p in stat if sum(p) > 0)
-            total_pixels = img_baseline.size * img_baseline.size
+
+            # FIXED: Utilizăm funcții moderne pentru a evita DeprecationWarning în Pillow
+            pixels_changed = sum(1 for p in diff.getdata() if sum(p) > 0)
+
+            # FIXED: Calculăm corect suprafața totală înmulțind lățimea (index 0) cu înălțimea (index 1)
+            width, height = img_baseline.size
+            total_pixels = width * height
+
             mismatch_percentage = (pixels_changed / total_pixels) * 100
 
             logger.warning(f"📊 [VISUAL SCORE] Mismatch for '{baseline_name}': {mismatch_percentage:.2f}%")
@@ -134,3 +139,4 @@ class BasePage:
 
             logger.info(f"✅ [VISUAL PASS] Diff ({mismatch_percentage:.2f}%) is within tolerance.")
             return True
+
