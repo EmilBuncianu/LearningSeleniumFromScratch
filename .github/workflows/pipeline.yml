@@ -27,7 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         # Instalăm pachetele Python esențiale pentru suite
-        pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd allure-pytest
+        pip install selenium pytest pytest-html pytest-xdist requests pytest-bdd allure-pytest jsonschema Pillow
 
     - name: Setup Microsoft Edge
       if: matrix.browser == 'edge'
